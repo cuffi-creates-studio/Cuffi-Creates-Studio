@@ -32,7 +32,14 @@ const storage = {
 
 const SUPABASE_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
+  }
+});
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
 
 
@@ -127,6 +134,15 @@ function bindNavigation() {
 function openApp(key) {
   const app = APPS[key];
   if (!app) return;
+
+  // Në telefon Inventari i Ngjyrave hapet si faqe e plotë. Kjo shmang
+  // problemet e iframe/mobile shell dhe e bën të përdorshëm edhe nga PWA.
+  const isPhone = window.matchMedia('(max-width: 900px)').matches;
+  if (key === 'ngjyrat' && isPhone) {
+    window.location.assign(app.src);
+    return;
+  }
+
   state.currentApp = key;
   $('#activeAppName').textContent = app.name;
   $('#topTitle').textContent = app.name;
@@ -557,9 +573,64 @@ function renderRevenueChart(invoices) {
   ctx.fillStyle='#9aa2c4';ctx.font='11px Inter';monthNames.forEach((m,i)=>ctx.fillText(m.slice(0,3),pad+w*i/11-8,cssH-12));
 }
 
+function discardPendingWorkSession() {
+  const pending = state.pendingWorkSession;
+  if (!pending) {
+    $('#workDialog')?.close();
+    return;
+  }
+
+  // STOP e ka shtuar kohën te totali i ditës. "Mos e ruaj" duhet ta
+  // kthejë mbrapsht që seanca të mos mbetet as te totali dhe as te historiku.
+  if (pending.date === dayKey()) {
+    state.elapsedToday = Math.max(0, state.elapsedToday - Number(pending.duration || 0));
+    storage.set(`cc_work_${dayKey()}`, state.elapsedToday);
+    renderTimer();
+  }
+
+  state.pendingWorkSession = null;
+  $('#workDescription').value = '';
+  $('#workDialog')?.close();
+  renderWorkHistory();
+  renderRealStats();
+}
+
 function initWorkHistory() {
-  $('#workForm').addEventListener('submit',e=>{ e.preventDefault(); if(!state.pendingWorkSession)return; const item={...state.pendingWorkSession,description:$('#workDescription').value.trim()||'Punë në studio'}; const list=workSessions(); list.unshift(item); saveWorkSessions(list); state.pendingWorkSession=null; $('#workDialog').close(); renderWorkHistory(); renderRealStats(); showToast('Seanca u ruajt',`${formatHumanDuration(item.duration)} · ${item.description}`); });
-  $('#discardWorkSession').addEventListener('click',()=>{state.pendingWorkSession=null;});
+  const dialog = $('#workDialog');
+  const form = $('#workForm');
+  const discardButton = $('#discardWorkSession');
+  const closeButton = $('#closeWorkDialog');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!state.pendingWorkSession) {
+      dialog.close();
+      return;
+    }
+
+    const item = {
+      ...state.pendingWorkSession,
+      description: $('#workDescription').value.trim() || 'Punë në studio'
+    };
+    const list = workSessions();
+    list.unshift(item);
+    saveWorkSessions(list);
+    state.pendingWorkSession = null;
+    dialog.close();
+    renderWorkHistory();
+    renderRealStats();
+    showToast('Seanca u ruajt', `${formatHumanDuration(item.duration)} · ${item.description}`);
+  });
+
+  discardButton.addEventListener('click', discardPendingWorkSession);
+  closeButton?.addEventListener('click', discardPendingWorkSession);
+
+  // ESC sillet njësoj si X / "Mos e ruaj".
+  dialog.addEventListener('cancel', e => {
+    e.preventDefault();
+    discardPendingWorkSession();
+  });
+
   $('#exportWorkCsv').addEventListener('click',exportWorkCsv);
   $('#clearWorkHistory').addEventListener('click',()=>{if(confirm('Ta pastroj historikun e orëve?')){saveWorkSessions([]);renderWorkHistory();}});
   renderWorkHistory();
@@ -658,16 +729,26 @@ async function initAuth() {
   const emailInput = $('#loginUsername');
   const passwordInput = $('#loginPassword');
   const errorBox = $('#loginError');
+  const rememberInput = $('#rememberLogin');
+
+  // Mos e shfaq login-in gjatë kontrollit të sesionit pas refresh-it.
+  overlay.classList.add('is-hidden');
+  overlay.setAttribute('aria-busy', 'true');
+
+  const remembered = storage.get('cc_remember_login', true);
+  if (rememberInput) rememberInput.checked = remembered !== false;
 
   const showLogin = () => {
+    overlay.setAttribute('aria-busy', 'false');
     overlay.classList.remove('is-hidden');
     setTimeout(() => emailInput?.focus(), 80);
   };
 
   const hideLogin = () => {
+    overlay.setAttribute('aria-busy', 'false');
     overlay.classList.add('is-hidden');
-    passwordInput.value = '';
-    errorBox.textContent = '';
+    if (passwordInput) passwordInput.value = '';
+    if (errorBox) errorBox.textContent = '';
   };
 
   $('#togglePassword').onclick = () => {
@@ -682,7 +763,7 @@ async function initAuth() {
     const password = passwordInput.value;
     errorBox.textContent = 'Duke hyrë...';
 
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
       errorBox.textContent = error.message === 'Invalid login credentials'
@@ -692,8 +773,10 @@ async function initAuth() {
       return;
     }
 
-    errorBox.textContent = '';
-    hideLogin();
+    // Supabase ruan sesionin në localStorage. Ky preference mban edhe
+    // checkbox-in konsistent pas refresh-it.
+    storage.set('cc_remember_login', rememberInput ? rememberInput.checked : true);
+    if (data?.session) hideLogin();
   });
 
   $('#forgotPassword').onclick = () => {
@@ -710,15 +793,15 @@ async function initAuth() {
     event.preventDefault();
 
     const email = $('#forgotPasswordEmail').value.trim();
-    const errorBox = $('#forgotPasswordError');
+    const forgotError = $('#forgotPasswordError');
     const sendButton = $('#sendResetEmail');
 
     if (!email) {
-      errorBox.textContent = 'Shkruaj email-in.';
+      forgotError.textContent = 'Shkruaj email-in.';
       return;
     }
 
-    errorBox.textContent = 'Po dërgohet email-i...';
+    forgotError.textContent = 'Po dërgohet email-i...';
     sendButton.disabled = true;
 
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
@@ -728,24 +811,38 @@ async function initAuth() {
 
     if (error) {
       if ((error.message || '').toLowerCase().includes('security purposes')) {
-        errorBox.textContent = 'Prit pak sekonda dhe provo përsëri.';
+        forgotError.textContent = 'Prit pak sekonda dhe provo përsëri.';
       } else {
-        errorBox.textContent = `Email-i nuk u dërgua: ${error.message}`;
+        forgotError.textContent = `Email-i nuk u dërgua: ${error.message}`;
       }
       return;
     }
 
-    errorBox.textContent = '';
+    forgotError.textContent = '';
     $('#forgotPasswordDialog').close();
     showToast('Email-i u dërgua', 'Kontrollo Inbox dhe Spam/Junk për linkun e ndryshimit të fjalëkalimit.');
   });
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) hideLogin();
-  else showLogin();
+  // getSession lexon sesionin e ruajtur në localStorage. Vetëm pasi ky
+  // kontroll përfundon vendosim nëse login-i duhet shfaqur.
+  try {
+    let { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+
+    if (!session) {
+      const refreshed = await supabaseClient.auth.refreshSession();
+      session = refreshed.data?.session || null;
+    }
+
+    if (session) hideLogin();
+    else showLogin();
+  } catch (error) {
+    console.error('Auth session check failed:', error);
+    showLogin();
+  }
 
   supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) hideLogin();
+    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) hideLogin();
     if (event === 'SIGNED_OUT') showLogin();
 
     if (event === 'PASSWORD_RECOVERY') {
@@ -788,7 +885,6 @@ async function initAuth() {
     showToast('Fjalëkalimi u ndryshua', 'Tani mund të përdorësh fjalëkalimin e ri.');
   });
 }
-
 async function logout() {
   await supabaseClient.auth.signOut();
   setView('dashboard');
@@ -814,4 +910,3 @@ function showToast(title, message) {
   setTimeout(() => toast.remove(), 5500);
 }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
-  document.head.insertAdjacentHTML("beforeend", "<style>body, .app-container, .dashboard, main { background: #070000 !important; }</style>");

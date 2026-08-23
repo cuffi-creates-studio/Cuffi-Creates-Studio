@@ -1,1130 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sq">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventari i Ngjyrave & Materialeve - Tufting Studio</title>
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-        :root {
-            --card-bg: #ffffff;
-            --purple-primary: #7c3aed;
-            --purple-light: #ece4fb;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --green-stok: #10b981;
-            --orange-mbaron: #f59e0b;
-            --red-alert: #ef4444;
-            --border-color: #e5e7eb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-       /* Sfond i bukur gradient, i shpejtë dhe pa animacione që rëndojnë */
-        body {
-            background: linear-gradient(135deg, #f3123b, #cc5a99, #b805f3);
-            color: #f3f4f6;
-            padding: 24px;
-            min-height: 100vh;
-        }
-
-        /* Kutitë e mëdha anësore elegante dhe gjysmë të errëta me qoshe të rrumbullakosura */
-        .section-box {
-            background: rgba(45, 35, 48, 0.75) !important;
-            backdrop-filter: blur(12px);
-            border-radius: 24px !important;
-            padding: 24px !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
-        }
-
-        @keyframes neonWave {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        /* Seksonet Kryesore me efekt qelqi të errët */
-        .section-box {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Titulli kryesor "Leshi" tepër i dukshëm me efekt neon */
-        .header-title h1, h1 {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            text-shadow: 0 0 20px rgba(168, 85, 247, 0.8), 0 0 10px rgba(168, 85, 247, 0.5);
-            letter-spacing: 0.5px;
-        }
-
-        .header-title p, p {
-            font-size: 14px;
-            color: #d1d5db;
-            margin-top: 4px;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-
-        /* Navigimi & Filtrat */
-        .top-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .btn-filter {
-            padding: 8px 18px;
-            border-radius: 12px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-filter.active {
-            background: var(--purple-primary);
-            color: white;
-            box-shadow: 0 0 15px rgba(124, 58, 237, 0.6);
-        }
-
-        .search-bar-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 10px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            outline: none;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .search-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .btn-action {
-            background: var(--purple-primary);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
-        }
-
-        /* Grid e Kartelave */
-        .category-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 16px 0 12px 0;
-            color: #f3f4f6;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 14px;
-        }
-
-        .material-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        /* Kartelat DHE Materialet e Punës mbeten plotësisht TË BARDHA */
-        .card {
-            background: var(--card-bg) !important;
-            color: var(--text-dark) !important;
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.4);
-        }
-
-        .card-img-container {
-            width: 100%;
-            height: 110px;
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 8px;
-            background: #f9fafb;
-        }
-
-        .card-img-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 2px;
-            text-align: left;
-            color: var(--text-dark);
-        }
-
-        .card-weight {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-align: left;
-            margin-bottom: 6px;
-        }
-
-        .card-status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            margin-bottom: 8px;
-        }
-
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 600;
-        }
-
-        .status-badge.in-stock { color: var(--green-stok); }
-        .status-badge.low-stock { color: var(--orange-mbaron); }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .card-price {
-            font-size: 13px;
-            font-weight: 800;
-            text-align: left;
-            color: var(--text-dark);
-        }
-
-        .qty-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 8px;
-            background: #f3effa;
-            border-radius: 8px;
-            padding: 2px;
-        }
-
-        .btn-qty {
-            border: none;
-            background: white;
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            color: var(--text-dark);
-        }
-
-        /* Modal Shto Artikull */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .modal-content {
-            background: #ffffff;
-            color: #1f2937;
-            padding: 24px;
-            border-radius: 16px;
-            width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .modal-content input, .modal-content select {
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        /* Paneli "Materiale që po mbarojnë" */
-        .alert-box {
-            background: rgba(253, 232, 232, 0.9);
-            color: #1f2937;
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 20px;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .alert-title {
-            color: var(--red-alert);
-            font-weight: 700;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .alert-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .custom-filter-row { flex-wrap: wrap; }
-        .custom-filter-row .btn-filter { min-width: 92px; }
-        #listContainer .alert-box { margin-top: 0; }
-        #listContainer .alert-item { background: rgba(255,255,255,0.72); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
-        @media (max-width: 699px) {
-            .dashboard-container { display:block !important; }
-            .dashboard-container > .section-box { margin-bottom: 14px; }
-            .custom-filter-row .btn-filter { min-width: 0; flex: 1 1 calc(50% - 6px); }
-        }
-    </style>
-  <link rel="stylesheet" href="cc-exact-pages.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07091a">
+  <title>Inventari i Ngjyrave · Cuffi Creates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root{--bg:#060817;--panel:#0b1026;--panel2:#10162f;--line:#26315a;--text:#f7f8ff;--muted:#929bbd;--purple:#b72cff;--blue:#2c74ff;--green:#19f07d;--pink:#ff3eb5;--danger:#ff4e75;--shadow:0 20px 70px rgba(0,0,0,.35)}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 15% 0,rgba(106,24,180,.15),transparent 35%),radial-gradient(circle at 90% 5%,rgba(42,106,255,.12),transparent 30%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}button,input,textarea,select{font:inherit}.page{max-width:1450px;margin:auto;padding:22px 24px 44px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}.titlebox{display:flex;align-items:center;gap:14px}.back{width:44px;height:44px;border-radius:13px;border:1px solid var(--line);background:#0a0f24;color:#fff;cursor:pointer}.titlebox h1{font-size:24px;margin:0}.titlebox p{margin:5px 0 0;color:var(--muted);font-size:12px}.sync{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#5a658a;box-shadow:0 0 14px currentColor}.sync.online .dot{background:var(--green)}
+    .toolbar{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:12px;margin-bottom:18px}.search{height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:#090e22}.search input{width:100%;border:0;outline:0;background:transparent;color:#fff}.btn{height:48px;border-radius:14px;padding:0 18px;border:1px solid var(--line);background:#0c1229;color:#fff;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px}.btn.primary{border:0;background:linear-gradient(100deg,var(--purple),var(--blue));box-shadow:0 0 24px rgba(170,47,255,.25)}.btn:hover{filter:brightness(1.08)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(17,24,53,.94),rgba(8,12,29,.94));padding:15px 16px}.stat span{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;margin-top:5px;font-size:22px}.stat small{color:var(--green);font-size:10px}
+    .panel{border:1px solid var(--line);border-radius:18px;background:rgba(8,12,29,.86);box-shadow:var(--shadow);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid rgba(70,83,130,.35)}.panel-head h2{font-size:15px;margin:0}.panel-head span{font-size:11px;color:var(--muted)}
+    .grid{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px}.empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted)}.empty i{font-size:36px;margin-bottom:12px;color:#596386}.card{position:relative;border:1px solid #26315a;border-radius:17px;background:linear-gradient(180deg,#10162f,#0a0f24);overflow:hidden;min-height:235px}.swatch{height:74px;background:var(--swatch,#9b5cff);position:relative}.swatch:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(0,0,0,.18))}.card-body{padding:14px}.code{font-size:10px;color:#d56fff;text-transform:uppercase;letter-spacing:.12em;font-weight:800}.card h3{margin:6px 0 3px;font-size:17px}.meta{color:var(--muted);font-size:11px;min-height:16px}.qty{display:flex;align-items:end;justify-content:space-between;margin-top:16px}.qty strong{font-size:27px}.qty span{font-size:11px;color:var(--muted)}.low{color:#ffb12b!important}.zero{color:var(--danger)!important}.actions{display:flex;gap:8px;margin-top:14px}.iconbtn{height:34px;flex:1;border-radius:10px;border:1px solid #2a365f;background:#0d132c;color:#dce2ff;cursor:pointer}.iconbtn.delete{color:#ff6b89;border-color:rgba(255,78,117,.35)}.thumb{position:absolute;right:10px;top:10px;width:54px;height:54px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.3);z-index:2;background:#0b1026}
+    dialog{width:min(590px,calc(100vw - 24px));border:1px solid #344170;border-radius:20px;background:#0b1026;color:#fff;padding:0;box-shadow:0 30px 100px rgba(0,0,0,.6)}dialog::backdrop{background:rgba(2,4,14,.75);backdrop-filter:blur(4px)}.modal-head{display:flex;align-items:center;justify-content:space-between;padding:17px 18px;border-bottom:1px solid #27325a}.modal-head h3{margin:0;font-size:17px}.x{width:36px;height:36px;border:0;border-radius:10px;background:#121a38;color:#fff;cursor:pointer}.form{padding:18px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#b3bcdd;font-weight:700}.field input,.field textarea,.field select{width:100%;border:1px solid #2c3967;border-radius:11px;background:#080d20;color:#fff;outline:none;padding:11px 12px}.field input{height:44px}.field input:focus,.field textarea:focus,.field select:focus{border-color:#7557ff;box-shadow:0 0 0 3px rgba(117,87,255,.12)}.color-row{display:grid;grid-template-columns:58px 1fr;gap:9px}.color-row input[type=color]{padding:4px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:17px}.error{min-height:18px;margin-top:8px;color:#ff7893;font-size:11px}.toast{position:fixed;right:18px;bottom:18px;z-index:50;max-width:360px;padding:13px 15px;border:1px solid #33406e;border-radius:13px;background:#0c122a;box-shadow:var(--shadow);display:none}.toast.show{display:block}.toast strong{display:block;font-size:12px}.toast span{display:block;color:#aeb7d9;font-size:11px;margin-top:4px}
+    @media(max-width:760px){.page{padding:14px 12px 90px}.topbar{align-items:flex-start}.titlebox h1{font-size:19px}.sync{margin-top:10px}.toolbar{grid-template-columns:1fr 1fr}.search{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr;padding:11px}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.btn{padding:0 12px;font-size:12px}.card{min-height:225px}}
+  </style>
 </head>
-<body class="cc-page cc-colors">
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="titlebox"><button class="back" id="backBtn" aria-label="Kthehu"><i class="fa-solid fa-arrow-left"></i></button><div><h1>Inventari i Ngjyrave</h1><p>Menaxho ngjyrat, kodet dhe sasitë e materialeve.</p></div></div>
+      <div class="sync" id="syncState"><i class="dot"></i><span>Duke u lidhur…</span></div>
+    </header>
 
-<div class="dashboard-container">
+    <section class="toolbar">
+      <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="searchInput" placeholder="Kërko emër, kod, markë…"></label>
+      <button class="btn" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Rifresko</button>
+      <button class="btn primary" id="addBtn"><i class="fa-solid fa-plus"></i> Shto ngjyrë</button>
+    </section>
 
-    <!-- E MAJTA: LESHI -->
-    <div class="section-box">
-        <div class="header-title">
-            <h1>Leshi</h1>
-            <p>Menaxho ngjyrat dhe stoqet e leshit</p>
-        </div>
+    <section class="stats">
+      <article class="stat"><span>Ngjyra</span><strong id="statColors">0</strong><small>regjistrime</small></article>
+      <article class="stat"><span>Sasia totale</span><strong id="statQty">0</strong><small>njësi</small></article>
+      <article class="stat"><span>Stok i ulët</span><strong id="statLow">0</strong><small>≤ 2 njësi</small></article>
+      <article class="stat"><span>Pa stok</span><strong id="statZero">0</strong><small>duhen porositur</small></article>
+    </section>
 
-        <div class="top-controls custom-filter-row">
-            <button class="btn-filter active" data-filter-btn="500g" onclick="filterYarn('500g')">Topa 500g</button>
-            <button class="btn-filter" data-filter-btn="50g" onclick="filterYarn('50g')">Topa 50g</button>
-            <button class="btn-filter" data-filter-btn="material" onclick="filterYarn('material')">Materiale</button>
-            <button class="btn-filter" data-filter-btn="list" onclick="filterYarn('list')">Lista</button>
-        </div>
+    <section class="panel">
+      <div class="panel-head"><h2>Ngjyrat e ruajtura</h2><span id="resultCount">0 rezultate</span></div>
+      <div class="grid" id="colorGrid"></div>
+    </section>
+  </main>
 
-        <div class="search-bar-row">
-            <input type="text" id="searchInput" class="search-input" placeholder="Kërko ngjyrën..." oninput="renderApp()">
-            <button class="btn-action" onclick="openModal('leshi')">+ Shto Lesh</button>
-        </div>
+  <dialog id="colorDialog">
+    <form id="colorForm" class="form">
+      <div class="modal-head" style="margin:-18px -18px 18px"><h3 id="dialogTitle">Shto ngjyrë</h3><button type="button" class="x" id="closeDialog"><i class="fa-solid fa-xmark"></i></button></div>
+      <input type="hidden" id="itemId">
+      <div class="fields">
+        <div class="field"><label>Emri *</label><input id="itemName" required placeholder="p.sh. Neon Pink"></div>
+        <div class="field"><label>Kodi</label><input id="itemCode" placeholder="p.sh. NP-104"></div>
+        <div class="field"><label>Marka</label><input id="itemBrand" placeholder="p.sh. Himalaya"></div>
+        <div class="field"><label>Sasia</label><input id="itemQty" type="number" min="0" step="1" value="1"></div>
+        <div class="field"><label>Njësia</label><select id="itemUnit"><option value="copë">copë</option><option value="kg">kg</option><option value="g">g</option><option value="rrotull">rrotull</option><option value="paketë">paketë</option></select></div>
+        <div class="field"><label>Ngjyra</label><div class="color-row"><input id="itemHex" type="color" value="#a855f7"><input id="itemHexText" value="#a855f7" maxlength="7"></div></div>
+        <div class="field full"><label>Foto (opsionale)</label><input id="itemImage" type="file" accept="image/*"></div>
+        <div class="field full"><label>Shënim</label><textarea id="itemNotes" rows="3" placeholder="Detaje për materialin…"></textarea></div>
+      </div>
+      <div class="error" id="formError"></div>
+      <div class="modal-actions"><button type="button" class="btn" id="cancelDialog">Anulo</button><button class="btn primary" id="saveBtn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Ruaj</button></div>
+    </form>
+  </dialog>
 
-        <div id="yarn500Container">
-            <div class="category-title">Topa Leshi (500g)</div>
-            <div class="cards-grid" id="grid500g"></div>
-        </div>
+  <div class="toast" id="toast"><strong></strong><span></span></div>
 
-        <div id="yarn50Container">
-            <div class="category-title">Topa Leshi (50g)</div>
-            <div class="cards-grid" id="grid50g"></div>
-        </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    'use strict';
+    const SUPABASE_URL = 'https://xvnvzadfteklfqaiqdrq.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}});
+    const LOCAL_KEY = 'cc_color_inventory';
+    let items = [];
+    let user = null;
+    let remoteEnabled = false;
+    let currentImageUrl = '';
+    const $ = s => document.querySelector(s);
 
-        <div id="listContainer" style="display:none; margin-top:14px;">
-            <div class="alert-box">
-                <div class="alert-title">⚠️ Materiale që po mbarojnë</div>
-                <div id="alertListInline"></div>
-            </div>
-        </div>
-    </div>
+    function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function localRead(){try{return JSON.parse(localStorage.getItem(LOCAL_KEY))||[]}catch{return []}}
+    function localWrite(){localStorage.setItem(LOCAL_KEY,JSON.stringify(items));}
+    function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+    function toast(title,msg){const t=$('#toast');t.querySelector('strong').textContent=title;t.querySelector('span').textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3500)}
+    function setSync(text,online=false){const el=$('#syncState');el.querySelector('span').textContent=text;el.classList.toggle('online',online)}
 
-    <!-- E DJAHTA: MATERIALET E PUNËS -->
-    <div class="section-box">
-        <div class="header-title" style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-                <h1>Materialet e Punës</h1>
-                <p>Të gjitha materialet e përdorura në punët tuaja</p>
-            </div>
-            <button class="btn-action" onclick="openModal('material')">+ Shto</button>
-        </div>
-
-        <div class="cards-grid material-grid" id="gridMaterials"></div>
-
-        <!-- Materiale që po mbarojnë -->
-        <div class="alert-box">
-            <div class="alert-title">⚠️ Materiale që po mbarojnë</div>
-            <div id="alertList"></div>
-        </div>
-    </div>
-
-</div>
-
-<!-- MODAL FOR SHTO ARTIKULL -->
-<div class="modal" id="itemModal">
-    <div class="modal-content">
-        <h3 id="modalTitle">Shto Artikull të Ri</h3>
-        <input type="text" id="itemName" placeholder="Emri (P.sh. E bardhë ose Pistoletë)">
-        <select id="itemCategory">
-            <option value="500g">Lesh Topa 500g</option>
-            <option value="50g">Lesh Topa 50g</option>
-            <option value="material">Material Punë</option>
-        </select>
-        <input type="number" id="itemQty" placeholder="Sasia ne stok">
-        <input type="number" step="0.01" id="itemPrice" placeholder="Çmimi (€)">
-        <label style="font-size: 12px; font-weight: 600;">Zgjidh Foto (1000x1000 me cilësi të plotë):</label>
-        <input type="file" id="itemImage" accept="image/*">
-        <button class="btn-action" onclick="saveNewItem()">Ruaj në Stok</button>
-        <button style="background: #ccc; border:none; padding:8px; border-radius:8px; cursor:pointer;" onclick="closeModal()">Anulo</button>
-    </div>
-</div>
-
-<script>
-    // DATA INITIALIZATION WITH LOCALFORAGE (INDEXEDDB)
-    let inventory = [];
-
-    const SUPABASE_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    const INVENTORY_TABLE = "user_inventory";
-    const INVENTORY_BUCKET = "inventory-images";
-
-    async function getCurrentUser() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        return session?.user || null;
-    }
-
-    function isSupabaseImageUrl(value) {
-        return typeof value === "string" && value.includes("/storage/v1/object/public/" + INVENTORY_BUCKET + "/");
-    }
-
-    function dataUrlToBlob(dataUrl) {
-        const parts = dataUrl.split(",");
-        const mime = (parts[0].match(/data:(.*?);/) || [])[1] || "image/jpeg";
-        const binary = atob(parts[1]);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        return new Blob([bytes], { type: mime });
-    }
-
-    function mimeFromName(name) {
-        const ext = String(name || "").toLowerCase().split(".").pop();
-        if (ext === "png") return "image/png";
-        if (ext === "webp") return "image/webp";
-        if (ext === "gif") return "image/gif";
-        return "image/jpeg";
-    }
-
-    async function uploadBlobToSupabase(blob, originalName = "photo.jpg") {
-        const user = await getCurrentUser();
-        if (!user) throw new Error("Nuk ka përdorues të kyçur në Supabase.");
-
-        const ext = (String(originalName).split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "jpg";
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabaseClient.storage
-            .from(INVENTORY_BUCKET)
-            .upload(path, blob, { contentType: blob.type || mimeFromName(originalName), upsert: false });
-
-        if (uploadError) throw uploadError;
-
-        const { data } = supabaseClient.storage.from(INVENTORY_BUCKET).getPublicUrl(path);
-        return data.publicUrl;
-    }
-
-    async function uploadFileToSupabase(file) {
-        return uploadBlobToSupabase(file, file.name || "photo.jpg");
-    }
-
-    async function migrateOneImageToSupabase(item) {
-        if (!item?.img || isSupabaseImageUrl(item.img) || /^https?:\/\//i.test(item.img)) return false;
-
-        try {
-            let blob = null;
-            let name = `inventory-${item.id}.jpg`;
-
-            if (String(item.img).startsWith("data:image")) {
-                blob = dataUrlToBlob(item.img);
-            } else if (typeof require === "function") {
-                const fs = require("fs");
-                const path = require("path");
-                if (fs.existsSync(item.img)) {
-                    const buffer = fs.readFileSync(item.img);
-                    name = path.basename(item.img);
-                    blob = new Blob([buffer], { type: mimeFromName(name) });
-                }
-            }
-
-            if (!blob) return false;
-            item.img = await uploadBlobToSupabase(blob, name);
-            return true;
-        } catch (error) {
-            console.error("Fotoja nuk u migrue në Supabase:", item?.name, error);
-            return false;
+    async function init(){
+      const {data:{session}} = await sb.auth.getSession();
+      user = session?.user || null;
+      if(user){
+        try{
+          const {data,error}=await sb.from('user_inventory').select('inventory').eq('user_id',user.id).maybeSingle();
+          if(error) throw error;
+          remoteEnabled=true;
+          if(data?.inventory && Array.isArray(data.inventory)) items=data.inventory;
+          else {items=localRead(); await saveRemote();}
+          localWrite();
+          setSync('Supabase · sinkronizuar',true);
+        }catch(err){
+          console.error(err);items=localRead();setSync('Local · kontrollo SQL/Supabase',false);
         }
+      }else{
+        items=localRead();setSync('Local · pa sesion Supabase',false);
+      }
+      render();
     }
 
-    async function migrateExistingImagesToSupabase() {
-        let changed = false;
-        for (const item of inventory) {
-            if (await migrateOneImageToSupabase(item)) changed = true;
-        }
-        return changed;
+    async function saveRemote(){
+      localWrite();
+      if(!remoteEnabled || !user) return;
+      setSync('Duke ruajtur…',true);
+      const {error}=await sb.from('user_inventory').upsert({user_id:user.id,inventory:items,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      if(error){setSync('Gabim sinkronizimi',false);throw error}
+      setSync('Supabase · sinkronizuar',true);
     }
 
-    async function saveCloudInventory() {
-        const user = await getCurrentUser();
-        if (!user) return;
-
-        const { error } = await supabaseClient
-            .from(INVENTORY_TABLE)
-            .upsert({
-                user_id: user.id,
-                inventory,
-                updated_at: new Date().toISOString()
-            }, { onConflict: "user_id" });
-
-        if (error) throw error;
+    function render(){
+      const q=$('#searchInput').value.trim().toLowerCase();
+      const filtered=items.filter(x=>[x.name,x.code,x.brand,x.notes].join(' ').toLowerCase().includes(q));
+      $('#resultCount').textContent=`${filtered.length} rezultate`;
+      $('#statColors').textContent=items.length;
+      $('#statQty').textContent=items.reduce((s,x)=>s+Number(x.quantity||0),0);
+      $('#statLow').textContent=items.filter(x=>Number(x.quantity||0)>0&&Number(x.quantity||0)<=2).length;
+      $('#statZero').textContent=items.filter(x=>Number(x.quantity||0)<=0).length;
+      const grid=$('#colorGrid');
+      if(!filtered.length){grid.innerHTML='<div class="empty"><i class="fa-solid fa-palette"></i><div>Nuk ka ngjyra për t’u shfaqur.</div></div>';return}
+      grid.innerHTML=filtered.map(x=>{
+        const qty=Number(x.quantity||0), cls=qty<=0?'zero':qty<=2?'low':'';
+        return `<article class="card" style="--swatch:${esc(x.hex||'#a855f7')}">${x.imageUrl?`<img class="thumb" src="${esc(x.imageUrl)}" alt="">`:''}<div class="swatch"></div><div class="card-body"><div class="code">${esc(x.code||'PA KOD')}</div><h3>${esc(x.name||'Pa emër')}</h3><div class="meta">${esc(x.brand||'')} ${x.notes?'· '+esc(x.notes):''}</div><div class="qty"><div><strong class="${cls}">${qty}</strong> <span>${esc(x.unit||'copë')}</span></div><span>${esc(x.hex||'')}</span></div><div class="actions"><button class="iconbtn" data-edit="${esc(x.id)}"><i class="fa-solid fa-pen"></i> Ndrysho</button><button class="iconbtn delete" data-delete="${esc(x.id)}"><i class="fa-solid fa-trash"></i></button></div></div></article>`
+      }).join('');
     }
 
-
-    const defaultItems = [
-        { id: 1, name: "E bardhë", category: "500g", qty: 32, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+White" },
-        { id: 2, name: "Rozë", category: "500g", qty: 24, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+Pink" },
-        { id: 3, name: "E verdhë", category: "500g", qty: 18, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+Yellow" },
-        { id: 4, name: "E bardhë", category: "50g", qty: 45, price: 2.20, img: "https://via.placeholder.com/1000?text=Ball+White" },
-        { id: 5, name: "Rozë", category: "50g", qty: 5, price: 2.20, img: "https://via.placeholder.com/1000?text=Ball+Pink" },
-        { id: 6, name: "Pistoletë Tufting 2cm", category: "material", qty: 1, price: 140.00, img: "https://via.placeholder.com/1000?text=Tufting+Gun" },
-        { id: 7, name: "Spray Glue Prime Fix", category: "material", qty: 2, price: 14.00, img: "https://via.placeholder.com/1000?text=Spray+Glue" }
-    ];
-
-   // ======================================================
-// LOAD DATA FROM INDEXEDDB
-// ======================================================
-
-async function loadData() {
-    try {
-        const localSaved = await localforage.getItem('tufting_studio_inventory');
-        const user = await getCurrentUser();
-
-        if (user) {
-            const { data, error } = await supabaseClient
-                .from(INVENTORY_TABLE)
-                .select('inventory, updated_at')
-                .eq('user_id', user.id)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            if (data && Array.isArray(data.inventory) && data.inventory.length > 0) {
-                inventory = data.inventory;
-                await localforage.setItem('tufting_studio_inventory', inventory);
-                console.log("Inventari u ngarkua nga Supabase:", inventory.length);
-            } else if (Array.isArray(localSaved) && localSaved.length > 0) {
-                inventory = localSaved;
-                await migrateExistingImagesToSupabase();
-                await localforage.setItem('tufting_studio_inventory', inventory);
-                await saveCloudInventory();
-                console.log("Inventari lokal u dërgua në Supabase:", inventory.length);
-            } else {
-                inventory = defaultItems;
-                await localforage.setItem('tufting_studio_inventory', inventory);
-            }
-        } else if (Array.isArray(localSaved) && localSaved.length > 0) {
-            inventory = localSaved;
-        } else {
-            inventory = defaultItems;
-            await localforage.setItem('tufting_studio_inventory', inventory);
-        }
-    } catch (err) {
-        console.error("Gabim gjatë ngarkimit të inventarit:", err);
-        const localSaved = await localforage.getItem('tufting_studio_inventory');
-        inventory = (Array.isArray(localSaved) && localSaved.length > 0) ? localSaved : defaultItems;
+    function openDialog(item=null){
+      $('#dialogTitle').textContent=item?'Ndrysho ngjyrën':'Shto ngjyrë';
+      $('#itemId').value=item?.id||'';$('#itemName').value=item?.name||'';$('#itemCode').value=item?.code||'';$('#itemBrand').value=item?.brand||'';$('#itemQty').value=item?.quantity??1;$('#itemUnit').value=item?.unit||'copë';$('#itemHex').value=item?.hex||'#a855f7';$('#itemHexText').value=item?.hex||'#a855f7';$('#itemNotes').value=item?.notes||'';$('#itemImage').value='';currentImageUrl=item?.imageUrl||'';$('#formError').textContent='';$('#colorDialog').showModal();setTimeout(()=>$('#itemName').focus(),50)
+    }
+    function closeDialog(){if($('#colorDialog').open)$('#colorDialog').close()}
+    async function uploadImage(file){
+      if(!file)return currentImageUrl;
+      if(!user||!remoteEnabled){
+        if(file.size>900000) throw new Error('Pa Supabase, fotoja duhet të jetë më e vogël se 900 KB.');
+        return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)});
+      }
+      const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase();
+      const path=`${user.id}/${Date.now()}-${uid()}.${ext}`;
+      const {error}=await sb.storage.from('inventory-images').upload(path,file,{upsert:false,contentType:file.type||undefined});
+      if(error) throw error;
+      return sb.storage.from('inventory-images').getPublicUrl(path).data.publicUrl;
     }
 
-    renderApp();
-}
-
-// ======================================================
-// IMPORTO BACKUP-IN E INVENTARIT
-// ======================================================
-
-async function importInventoryBackup() {
-
-    try {
-
-        const input = document.createElement("input");
-
-        input.type = "file";
-        input.accept = ".json,application/json";
-
-        input.onchange = async function(event) {
-
-            try {
-
-                const file = event.target.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                const text = await file.text();
-                const data = JSON.parse(text);
-
-                if (!Array.isArray(data)) {
-                    throw new Error("Backup-i nuk ka formatin e duhur.");
-                }
-
-                if (data.length === 0) {
-                    throw new Error("Backup-i është bosh.");
-                }
-
-                const answer = confirm(
-                    "U gjetën " +
-                    data.length +
-                    " produkte në backup.\n\n" +
-                    "Dëshiron t'i importosh?"
-                );
-
-                if (!answer) {
-                    return;
-                }
-
-                inventory = data;
-
-                await saveData();
-
-                renderApp();
-
-                alert(
-                    "Backup-i u importua me sukses!\n\n" +
-                    "Produkte: " +
-                    inventory.length
-                );
-
-            } catch (error) {
-
-                console.error("Gabim gjatë importimit:", error);
-
-                alert(
-                    "Importimi dështoi:\n\n" +
-                    error.message
-                );
-            }
-        };
-
-        input.click();
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert("Nuk u hap dot backup-i.");
-    }
-}
-
-
-// ======================================================
-// MIGRO FOTOT BASE64 NE FOLDERIN E APLIKACIONIT
-// ======================================================
-
-async function migrateInventoryImages() {
-
-    try {
-
-        // Kjo funksionon vetëm brenda Electron
-        if (
-            typeof require !== "function"
-        ) {
-            alert(
-                "Migrimi i fotove duhet të bëhet nga aplikacioni Electron, jo nga Go Live."
-            );
-
-            return;
-        }
-
-        const { ipcRenderer } =
-            require("electron");
-
-
-        // Kontrollo inventarin
-        if (
-            !Array.isArray(inventory) ||
-            inventory.length === 0
-        ) {
-            alert(
-                "Inventari është bosh."
-            );
-
-            return;
-        }
-
-
-        // Numërojmë fotot Base64
-        const base64Photos =
-            inventory.filter(
-                item =>
-                    item.img &&
-                    typeof item.img === "string" &&
-                    item.img.startsWith("data:image")
-            );
-
-
-        // Nëse nuk ka më foto Base64
-        if (base64Photos.length === 0) {
-
-            alert(
-                "Nuk u gjet asnjë foto Base64 për transferim.\n\n" +
-                "Fotot mund të jenë transferuar tashmë."
-            );
-
-            return;
-        }
-
-
-        const answer = confirm(
-            "U gjetën " +
-            base64Photos.length +
-            " foto për transferim.\n\n" +
-
-            "Produktet, emrat, çmimet dhe sasitë nuk do të fshihen.\n\n" +
-
-            "Fotot do të ruhen si skedarë normalë në folderin e aplikacionit.\n\n" +
-
-            "Vazhdo?"
-        );
-
-
-        if (!answer) {
-            return;
-        }
-
-
-        // Dërgo inventarin te main.js
-        const result =
-            await ipcRenderer.invoke(
-                "migrate-inventory-images",
-                inventory
-            );
-
-
-        if (
-            !result ||
-            !result.success
-        ) {
-
-            throw new Error(
-                result?.error ||
-                "Migrimi dështoi."
-            );
-        }
-
-
-        // Marrim inventarin e ri
-        inventory = result.items;
-
-
-        // E ruajmë përsëri në IndexedDB
-        await saveData();
-
-
-        // Rifreskojmë kartat
-        renderApp();
-
-
-        console.log(
-            "Migrimi përfundoi:",
-            result
-        );
-
-
-        alert(
-            "MIGRIMI PËRFUNDOI ME SUKSES!\n\n" +
-
-            "Foto të transferuara: " +
-            result.converted +
-
-            "\nFoto të paprekura: " +
-            result.skipped +
-
-            "\n\nProduktet totale: " +
-            inventory.length +
-
-            "\n\nFotot janë ruajtur në:\n" +
-            result.folder
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Gabim gjatë migrimit të fotove:",
-            error
-        );
-
-        alert(
-            "Migrimi i fotove dështoi.\n\n" +
-            error.message +
-            "\n\nBackup-i nuk është prekur."
-        );
-    }
-}
-
-
-// ======================================================
-// RENDER APPLICATION
-// ======================================================
-
-function getImageSrc(img) {
-    if (!img) return "";
-
-    // Base64 dhe URL web përdoren direkt
-    if (img.startsWith("data:image") || img.startsWith("http://") || img.startsWith("https://") || img.startsWith("file://")) {
-        return img;
-    }
-
-    // Rrugët lokale të Windows kthehen në file:// URL për Electron
-    try {
-        if (typeof require === "function") {
-            const { pathToFileURL } = require("url");
-            return pathToFileURL(img).href;
-        }
-    } catch (err) {
-        console.error("Gabim në konvertimin e rrugës së fotos:", err);
-    }
-
-    return img;
-}
-
-function renderApp() {
-    const searchEl = document.getElementById('searchInput');
-    const query = searchEl ? searchEl.value.toLowerCase().trim() : '';
-
-    const grid500 = document.getElementById('grid500g');
-    const grid50 = document.getElementById('grid50g');
-    const gridMat = document.getElementById('gridMaterials');
-    const alertList = document.getElementById('alertList');
-    const alertListInline = document.getElementById('alertListInline');
-
-    if (!grid500 || !grid50 || !gridMat || !alertList || !alertListInline) {
-        console.error('Nuk u gjetën container-at e inventarit.');
-        return;
-    }
-
-    grid500.innerHTML = '';
-    grid50.innerHTML = '';
-    gridMat.innerHTML = '';
-    alertList.innerHTML = '';
-    alertListInline.innerHTML = '';
-
-    inventory.forEach(item => {
-        const itemName = String(item.name || '').toLowerCase();
-        if (!itemName.includes(query)) return;
-
-        const cardHTML = createCardHTML(item);
-
-        if (item.category === '500g') {
-            grid500.innerHTML += cardHTML;
-        } else if (item.category === '50g') {
-            grid50.innerHTML += cardHTML;
-        } else {
-            gridMat.innerHTML += cardHTML;
-        }
-
-        if (Number(item.qty) <= 5) {
-            const lowStockRow = `
-                <div class="alert-item">
-                    <span><strong>${escapeHTML(item.name)}</strong> <small style="color:var(--text-muted);">(${escapeHTML(item.category)})</small></span>
-                    <span style="font-weight:bold; color:var(--red-alert);">${Number(item.qty) || 0} copë</span>
-                </div>
-            `;
-            alertList.innerHTML += lowStockRow;
-            alertListInline.innerHTML += lowStockRow;
-        }
+    $('#searchInput').addEventListener('input',render);
+    $('#addBtn').onclick=()=>openDialog();
+    $('#closeDialog').onclick=closeDialog;$('#cancelDialog').onclick=closeDialog;
+    $('#itemHex').addEventListener('input',e=>$('#itemHexText').value=e.target.value);
+    $('#itemHexText').addEventListener('input',e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$('#itemHex').value=e.target.value});
+    $('#colorGrid').addEventListener('click',async e=>{
+      const edit=e.target.closest('[data-edit]'), del=e.target.closest('[data-delete]');
+      if(edit){openDialog(items.find(x=>String(x.id)===edit.dataset.edit));return}
+      if(del){const item=items.find(x=>String(x.id)===del.dataset.delete);if(!item||!confirm(`Ta fshijmë “${item.name}”?`))return;items=items.filter(x=>String(x.id)!==del.dataset.delete);try{await saveRemote();render();toast('U fshi',item.name)}catch(err){toast('Gabim',err.message)}}
     });
-}
-
-function escapeHTML(value) {
-    return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
-
-function createCardHTML(item) {
-    const qty = Number(item.qty) || 0;
-    const isLow = qty <= 5;
-    const statusClass = isLow ? 'low-stock' : 'in-stock';
-    const statusText = isLow ? 'Po mbaron' : 'Në stok';
-
-    const hasImage = item.img && !String(item.img).includes('via.placeholder.com');
-    const imageSrc = hasImage ? getImageSrc(String(item.img)) : '';
-
-    let categoryText = 'Material';
-    if (item.category === '500g') categoryText = '500g';
-    if (item.category === '50g') categoryText = '50g';
-
-    const safeName = escapeHTML(item.name);
-    const safeImageSrc = escapeHTML(imageSrc);
-    const safeCategory = escapeHTML(categoryText);
-    const price = Number.parseFloat(item.price);
-    const safePrice = Number.isFinite(price) ? price.toFixed(2) : '0.00';
-
-    return `
-        <div class="card" style="position: relative;">
-            <button onclick="deleteItem(${Number(item.id)})"
-                    title="Fshi artikullin"
-                    style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(0,0,0,.05); color:#9ca3af; border:none; width:20px; height:20px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;"
-                    onmouseover="this.style.background='#ef4444';this.style.color='white'"
-                    onmouseout="this.style.background='rgba(0,0,0,.05)';this.style.color='#9ca3af'">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-            </button>
-
-            <div class="card-img-container" style="position:relative; height:110px;">
-                ${hasImage ? `
-                    <img src="${safeImageSrc}" alt="${safeName}"
-                         onclick="openImageViewer(this.src)"
-                         style="width:100%; height:100%; object-fit:contain; cursor:zoom-in;"
-                         title="Klikoni për ta parë të madhe">
-                    <button onclick="document.getElementById('upload-file-${Number(item.id)}').click()"
-                            title="Ndrysho foton"
-                            style="position:absolute; bottom:6px; right:6px; background:rgba(255,255,255,.9); color:#4b5563; border:1px solid rgba(0,0,0,.08); border-radius:50%; width:26px; height:26px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                            <circle cx="12" cy="13" r="4"></circle>
-                        </svg>
-                    </button>
-                ` : `
-                    <div onclick="document.getElementById('upload-file-${Number(item.id)}').click()"
-                         style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#8b5cf6; cursor:pointer;">
-                        <span style="font-size:28px; font-weight:bold; line-height:1;">+</span>
-                        <span style="font-size:10px; font-weight:600; margin-top:2px; color:#6b7280;">Shto Foto</span>
-                    </div>
-                `}
-            </div>
-
-            <input type="file" id="upload-file-${Number(item.id)}" accept="image/*" style="display:none;" onchange="changeCardImage(${Number(item.id)}, event)">
-
-            <div class="card-title">${safeName}</div>
-            <div class="card-weight">${safeCategory}</div>
-            <div class="card-status-row">
-                <span class="status-badge ${statusClass}"><span class="dot"></span> ${statusText}</span>
-                <span style="color:var(--text-muted);">${qty} copë</span>
-            </div>
-            <div class="card-price">${safePrice} €</div>
-            <div class="qty-controls">
-                <button class="btn-qty" onclick="updateQty(${Number(item.id)}, -1)">-</button>
-                <span style="font-size:12px; font-weight:bold;">${qty}</span>
-                <button class="btn-qty" onclick="updateQty(${Number(item.id)}, 1)">+</button>
-            </div>
-        </div>
-    `;
-}
-
-async function changeCardImage(id, event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-
-    const item = inventory.find(i => Number(i.id) === Number(id));
-    if (!item) return;
-
-    try {
-        item.img = await uploadFileToSupabase(file);
-        await saveData();
-        renderApp();
-    } catch (error) {
-        console.error('Gabim gjatë ndryshimit të fotos:', error);
-        alert('Fotoja nuk u ndryshua: ' + error.message);
-    }
-}
-
-// ======================================================
-// SAVE DATA TO INDEXEDDB
-// ======================================================
-
-async function saveData() {
-    try {
-        await localforage.setItem('tufting_studio_inventory', inventory);
-
-        const user = await getCurrentUser();
-        if (user) await saveCloudInventory();
-
-        console.log("Inventari u ruajt:", inventory.length);
-    } catch (err) {
-        console.error("Gabim në ruajtje:", err);
-        alert("Inventari u ruajt lokalisht, por sinkronizimi me Supabase dështoi: " + err.message);
-    }
-}
-
-// FUNKSIONI PËR TË FSHIRË ARTIKULLIN NGA INVENTARI DHE INDEXEDDB
-async function deleteItem(id) {
-    const item = inventory.find(i => i.id === id);
-    if (!item) return;
-
-    if (confirm(`A jeni të sigurt që dëshironi të fshini "${item.name}"?`)) {
-        // Largojmë artikullin nga array
-        inventory = inventory.filter(i => i.id !== id);
-        
-        // Ruajmë gjendjen e re në IndexedDB
-        await saveData();
-        
-        // Rifreskojmë pamjen
-        renderApp();
-    }
-}
-
-    // UPDATE QUANTITY
-    async function updateQty(id, change) {
-        const item = inventory.find(i => i.id === id);
-        if (item) {
-            item.qty = Math.max(0, item.qty + change);
-            await saveData();
-            renderApp();
-        }
-    }
-
-    // MODAL CONTROL & ADD ITEM
-    let currentModalType = '500g';
-    function openModal(type) {
-        currentModalType = type;
-        document.getElementById('itemModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('itemModal').style.display = 'none';
-    }
-
-    // CONVERT 1000x1000 FILE TO DATAURL AND SAVE
- async function saveNewItem() {
-    const name = document.getElementById('itemName').value.trim();
-    const category = document.getElementById('itemCategory').value;
-    const qty = parseInt(document.getElementById('itemQty').value) || 0;
-    const price = parseFloat(document.getElementById('itemPrice').value) || 0.0;
-    const fileInput = document.getElementById('itemImage');
-
-    if (!name || fileInput.files.length === 0) {
-        alert("Ju lutemi plotësoni emrin dhe zgjidhni një foto!");
-        return;
-    }
-
-    try {
-        const imageUrl = await uploadFileToSupabase(fileInput.files[0]);
-
-        inventory.push({
-            id: Date.now(),
-            name,
-            category,
-            qty,
-            price,
-            img: imageUrl
-        });
-
-        await saveData();
-        renderApp();
-        closeModal();
-
-        document.getElementById('itemName').value = '';
-        document.getElementById('itemQty').value = '';
-        document.getElementById('itemPrice').value = '';
-        document.getElementById('itemImage').value = '';
-    } catch (error) {
-        console.error("Gabim gjatë ruajtjes së fotos:", error);
-        alert("Fotoja nuk u ruajt në Supabase: " + error.message);
-    }
-}
-    // FILTER FUNCTION FOR YARN
-    let activeYarnFilter = '500g';
-    function filterYarn(type) {
-        activeYarnFilter = type;
-        const g500 = document.getElementById('yarn500Container');
-        const g50 = document.getElementById('yarn50Container');
-        const mat = document.querySelector('.material-grid')?.closest('.section-box');
-        const listBox = document.getElementById('listContainer');
-        document.querySelectorAll('[data-filter-btn]').forEach(btn => btn.classList.toggle('active', btn.dataset.filterBtn === type));
-
-        g500.style.display = type === '500g' ? 'block' : 'none';
-        g50.style.display = type === '50g' ? 'block' : 'none';
-        if (mat) mat.style.display = type === 'material' ? 'block' : '';
-        if (type === 'material') {
-            g500.style.display = 'none';
-            g50.style.display = 'none';
-            if (listBox) listBox.style.display = 'none';
-        } else if (type === 'list') {
-            g500.style.display = 'none';
-            g50.style.display = 'none';
-            if (mat) mat.style.display = '';
-            if (listBox) listBox.style.display = 'block';
-            if (mat) mat.style.display = 'none';
-        } else {
-            if (mat) mat.style.display = 'none';
-            if (listBox) listBox.style.display = 'none';
-        }
-    }
-
-// INIT
-window.onload = async () => { await loadData(); filterYarn(activeYarnFilter); };
-
-function openImageViewer(imgSrc) {
-    const modal = document.getElementById('imageViewerModal');
-    const fullImg = document.getElementById('fullImageView');
-    fullImg.src = imgSrc;
-    modal.style.display = 'flex';
-}
-
-function closeImageViewer() {
-    document.getElementById('imageViewerModal').style.display = 'none';
-}
-</script>
-
-<!-- DRITARA PËR SHIKIMIN E FOTOS TË MADHE -->
-<div id="imageViewerModal" onclick="closeImageViewer()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <span style="position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
-    <img id="fullImageView" src="" style="max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); object-fit: contain;">
-</div>
-
+    $('#colorForm').addEventListener('submit',async e=>{
+      e.preventDefault();const save=$('#saveBtn');save.disabled=true;$('#formError').textContent='Duke ruajtur…';
+      try{
+        const id=$('#itemId').value||uid();const old=items.find(x=>String(x.id)===String(id));const imageUrl=await uploadImage($('#itemImage').files?.[0]);
+        const item={id,name:$('#itemName').value.trim(),code:$('#itemCode').value.trim(),brand:$('#itemBrand').value.trim(),quantity:Math.max(0,Number($('#itemQty').value||0)),unit:$('#itemUnit').value,hex:/^#[0-9a-f]{6}$/i.test($('#itemHexText').value)?$('#itemHexText').value:$('#itemHex').value,notes:$('#itemNotes').value.trim(),imageUrl,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+        if(!item.name)throw new Error('Shkruaj emrin e ngjyrës.');
+        const idx=items.findIndex(x=>String(x.id)===String(id));if(idx>=0)items[idx]=item;else items.unshift(item);
+        await saveRemote();closeDialog();render();toast('U ruajt',item.name)
+      }catch(err){console.error(err);$('#formError').textContent=err.message||'Nuk u ruajt.'}finally{save.disabled=false;if($('#formError').textContent==='Duke ruajtur…')$('#formError').textContent=''}
+    });
+    $('#refreshBtn').onclick=async()=>{setSync('Duke rifreskuar…',remoteEnabled);await init();toast('U rifreskua','Inventari u përditësua.')};
+    $('#backBtn').onclick=()=>{try{if(window.parent!==window&&typeof window.parent.setView==='function'){window.parent.setView('dashboard');return}}catch{}if(history.length>1)history.back();else location.href='index.html'};
+    $('#colorDialog').addEventListener('cancel',e=>{e.preventDefault();closeDialog()});
+    init();
+  </script>
 </body>
 </html>
