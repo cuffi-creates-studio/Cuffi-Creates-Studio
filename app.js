@@ -110,6 +110,7 @@ function bindNavigation() {
     if (view) setView(view.dataset.view);
   });
   $('#resetView').onclick = logout;
+  $('#mpLogout') && ($('#mpLogout').onclick = logout);
   $('#backDashboard').onclick = () => setView('dashboard');
   $('#jumpCalendar').onclick = () => {
     setView('dashboard');

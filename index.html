@@ -4,13 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cuffi Creates Studio</title>
-  <meta name="theme-color" content="#061127">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Cuffi Creates Studio">
-  <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="./images/pwa-192.png">
-  <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
@@ -69,7 +62,7 @@
           <p>Menaxho projektet, materialet, shitjet, faturat dhe terminet nga një vend i vetëm.</p>
           <button class="mp-primary" id="mpAddAppointment"><i class="fa-regular fa-calendar-plus"></i><span>Shto një termin</span></button>
         </div>
-        <div class="mp-hero-art"><img src="./images/studio-hero.png" alt="Cuffi Creates Studio"></div>
+        <div class="mp-hero-art"><img src="assets/studio-hero.png" alt="Cuffi Creates Studio"></div>
       </section>
 
       <section class="mp-time-card">
@@ -121,7 +114,7 @@
 
     <div class="mp-drawer-overlay" id="mpDrawerOverlay"></div>
     <aside class="mp-drawer" id="mpDrawer" aria-label="Programet">
-      <div class="mp-drawer-top"><img src="assets/CuffiCreatesNeon.png" alt="Cuffi Creates"><button id="mpDrawerClose" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="mp-drawer-top"><img src="./images/CuffiCreatesNeon.png" alt="Cuffi Creates"><button id="mpDrawerClose" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
       <h2>Programet</h2><div class="mp-neon-line"></div>
       <nav id="mpDrawerList">
         <button data-app="managerTufting"><span class="mp-app-icon violet"><i class="fa-solid fa-gun"></i></span><strong>Menager Tufting</strong><i class="fa-solid fa-chevron-right"></i></button>
@@ -135,7 +128,8 @@
         <button data-view="appointments"><span class="mp-app-icon violet"><i class="fa-regular fa-calendar"></i></span><strong>Terminat</strong><i class="fa-solid fa-chevron-right"></i></button>
         <button data-view="settings"><span class="mp-app-icon blue"><i class="fa-solid fa-gear"></i></span><strong>Cilësimet</strong><i class="fa-solid fa-chevron-right"></i></button>
       </nav>
-      <div class="mp-drawer-brand"><img src="assets/studio-hero.png" alt="Studio"><div><strong>Cuffi Creates Studio</strong><span>Krijo. Menaxho. Rrit.</span></div></div>
+      <div class="mp-drawer-brand"><img src="./images/studio-hero.png" alt="Studio"><div><strong>Cuffi Creates Studio</strong><span>Krijo. Menaxho. Rrit.</span></div></div>
+      <button id="mpLogout" type="button" style="margin-top:12px;width:100%;height:50px;border-radius:14px;border:1px solid rgba(255,70,105,.55);background:linear-gradient(180deg,#22142f,#161126);color:#ff6688;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:9px"><i class="fa-solid fa-right-from-bracket"></i> Dil nga sistemi</button>
     </aside>
 
     <nav class="mp-bottom">
