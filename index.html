@@ -18,6 +18,16 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="mobile-premium.css" />
   <link rel="stylesheet" href="cc-internal-views.css">
+
+<style id="hide-mobile-shell-on-desktop-tablet">
+@media (min-width: 700px) {
+  #mpShell,
+  .mp-shell {
+    display: none !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -384,54 +394,5 @@
     })();
   </script>
   
-
-<script id="remove-only-bottom-ghosts">
-(function () {
-  const names = new Set(["Galeria", "Backup & Restore", "Cilësimet"]);
-
-  function cleanGhosts() {
-    if (!window.matchMedia("(min-width: 700px)").matches) return;
-
-    const sidebar = document.querySelector(".sidebar");
-    if (!sidebar) return;
-
-    const sr = sidebar.getBoundingClientRect();
-
-    document.querySelectorAll("button, a").forEach(el => {
-      const label = String(el.textContent || "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (!names.has(label)) return;
-
-      /* Këto janë butonat normalë të sidebar-it: MOS I PREK. */
-      if (sidebar.contains(el)) return;
-
-      const r = el.getBoundingClientRect();
-
-      /* Hiq vetëm kopjet e vogla që dalin poshtë, jashtë sidebar-it. */
-      const outsideSidebar = r.left >= sr.right - 4;
-      const nearViewportBottom = r.top >= window.innerHeight - 120;
-      const looksLikeGhost = r.height <= 55;
-
-      if (outsideSidebar && nearViewportBottom && looksLikeGhost) {
-        el.style.setProperty("display", "none", "important");
-      }
-    });
-  }
-
-  window.addEventListener("load", cleanGhosts);
-  window.addEventListener("resize", cleanGhosts);
-  window.addEventListener("scroll", cleanGhosts, { passive: true });
-
-  const observer = new MutationObserver(cleanGhosts);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-
-  setTimeout(cleanGhosts, 100);
-  setTimeout(cleanGhosts, 500);
-  setTimeout(cleanGhosts, 1500);
-})();
-</script>
-
 </body>
 </html>
