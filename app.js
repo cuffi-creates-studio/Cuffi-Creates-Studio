@@ -32,6 +32,7 @@ const storage = {
 
 const AUTH_USER = "cuffi";
 const AUTH_PASS = "11asdrosagzimi";
+const AUTH_EMAIL = "gezimtahiri1@web.de";
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
 
 const UI_TRANSLATIONS = {
@@ -917,7 +918,8 @@ function initAuth() {
   const overlay = $('#loginOverlay');
   const remembered = localStorage.getItem('cc_auth') === 'true';
   const session = sessionStorage.getItem('cc_auth') === 'true';
-  if (remembered || session) { overlay.classList.add('is-hidden'); return; }
+  const cloudReady = localStorage.getItem('cuffi_cloud_auth_ok') === 'true';
+  if ((remembered || session) && cloudReady) { overlay.classList.add('is-hidden'); return; }
   overlay.classList.remove('is-hidden');
   setTimeout(() => $('#loginUsername')?.focus(), 80);
   $('#togglePassword').onclick = () => {
@@ -928,37 +930,61 @@ function initAuth() {
   };
   $('#loginForm').addEventListener('submit', async event => {
     event.preventDefault();
-    const user = $('#loginUsername').value.trim();
+
+    const typedUser = $('#loginUsername').value.trim();
     const pass = $('#loginPassword').value;
 
-    if (user === AUTH_USER && pass === AUTH_PASS) {
-      $('#loginError').textContent = 'Po lidhet me cloud...';
+    // Prano emailin ose aliasin e vjetër "cuffi", por autentikimi real bëhet vetëm në Supabase.
+    const allowedUser =
+      typedUser.toLowerCase() === AUTH_EMAIL.toLowerCase() ||
+      typedUser === AUTH_USER;
 
-      const cloudResult = typeof window.cuffiSupabaseSignIn === 'function'
-        ? await window.cuffiSupabaseSignIn("gezimtahiri1@web.de", pass)
-        : { ok:false, error:'Supabase nuk është ngarkuar ende.' };
-
-      if (!cloudResult.ok) {
-        // Mos e blloko hyrjen në aplikacion nëse Supabase nuk lidhet.
-        // Login-i lokal vazhdon normalisht; cloud sync thjesht mbetet joaktiv.
-        console.warn('Supabase Auth nuk u lidh:', cloudResult.error);
-      }
-
-      $('#loginError').textContent = '';
-      if ($('#rememberLogin').checked) localStorage.setItem('cc_auth', 'true');
-      else sessionStorage.setItem('cc_auth', 'true');
-      overlay.classList.add('is-hidden');
-      $('#loginPassword').value = '';
-    } else {
-      $('#loginError').textContent = 'Përdoruesi ose fjalëkalimi është gabim.';
-      $('#loginPassword').select();
+    if (!allowedUser || !pass) {
+      $('#loginError').textContent = 'Shkruaj emailin dhe fjalëkalimin.';
+      return;
     }
+
+    $('#loginError').textContent = 'Po lidhet me Supabase...';
+
+    if (typeof window.cuffiSupabaseSignIn !== 'function') {
+      $('#loginError').textContent = 'Supabase nuk është ngarkuar ende. Rifresko faqen dhe provo përsëri.';
+      return;
+    }
+
+    const result = await window.cuffiSupabaseSignIn(AUTH_EMAIL, pass);
+
+    if (!result.ok) {
+      localStorage.removeItem('cc_auth');
+      sessionStorage.removeItem('cc_auth');
+      localStorage.removeItem('cuffi_cloud_auth_ok');
+      $('#loginError').textContent = 'Emaili ose fjalëkalimi i Supabase është gabim.';
+      $('#loginPassword').select();
+      return;
+    }
+
+    localStorage.setItem('cuffi_cloud_auth_ok', 'true');
+    $('#loginError').textContent = '';
+
+    if ($('#rememberLogin').checked) {
+      localStorage.setItem('cc_auth', 'true');
+      sessionStorage.removeItem('cc_auth');
+    } else {
+      sessionStorage.setItem('cc_auth', 'true');
+      localStorage.removeItem('cc_auth');
+    }
+
+    overlay.classList.add('is-hidden');
+    $('#loginPassword').value = '';
   });
 }
 
 function logout() {
   localStorage.removeItem('cc_auth');
   sessionStorage.removeItem('cc_auth');
+  localStorage.removeItem('cuffi_cloud_auth_ok');
+  try {
+    if (window.__cuffiSupabaseClient) window.__cuffiSupabaseClient.auth.signOut();
+  } catch (_) {}
   setView('dashboard');
   $('#loginOverlay').classList.remove('is-hidden');
   $('#loginUsername').value = '';
@@ -1148,91 +1174,34 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
       await loadSupabase();
       if (!client) {
         client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
+        // client exposed only in-page for logout/debug
+
           auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
         });
       }
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) return { ok:false, error:error.message };
-      if (data?.session?.user) await startWithSession(data.session);
+      if (data?.session?.user) {
+        localStorage.setItem('cuffi_cloud_auth_ok', 'true');
+        await startWithSession(data.session);
+      }
       return { ok:true };
     } catch (e) {
       return { ok:false, error:e?.message || String(e) };
     }
   };
 
-  let cuffiRecoveryHandling = false;
-
-  async function cuffiHandlePasswordRecovery(session) {
-    if (cuffiRecoveryHandling || !session) return;
-    cuffiRecoveryHandling = true;
-
-    try {
-      alert(
-        "Rikthimi i fjalëkalimit u hap me sukses.\n\n" +
-        "Tani do të vendosësh fjalëkalimin e ri të Supabase.\n" +
-        "Vendos TË NJËJTIN fjalëkalim që përdor te login-i i aplikacionit."
-      );
-
-      const p1 = prompt("Vendos fjalëkalimin e ri:");
-      if (!p1) {
-        alert("Ndryshimi i fjalëkalimit u anulua.");
-        return;
-      }
-      if (p1.length < 6) {
-        alert("Fjalëkalimi duhet të ketë të paktën 6 karaktere.");
-        return;
-      }
-
-      const p2 = prompt("Shkruaje edhe një herë fjalëkalimin e ri:");
-      if (p1 !== p2) {
-        alert("Fjalëkalimet nuk përputhen. Provo përsëri nga linku i email-it.");
-        return;
-      }
-
-      const { error } = await client.auth.updateUser({ password: p1 });
-      if (error) {
-        console.error("Supabase password recovery:", error);
-        alert("Fjalëkalimi nuk u ndryshua:\n\n" + error.message);
-        return;
-      }
-
-      localStorage.setItem("cuffi_cloud_auth_ok", "true");
-
-      try {
-        history.replaceState({}, document.title, location.pathname);
-      } catch (_) {}
-
-      alert(
-        "Fjalëkalimi u ndryshua me sukses.\n\n" +
-        "Tani përdor të njëjtin login në PC dhe telefon."
-      );
-
-      const { data: { session: newSession } } = await client.auth.getSession();
-      if (newSession) await startWithSession(newSession);
-
-    } finally {
-      cuffiRecoveryHandling = false;
-    }
-  }
-
   async function initCloud() {
     try {
       await loadSupabase();
       client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          storage: window.localStorage
-        }
+        auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
       });
 
-      client.auth.onAuthStateChange((event, session) => {
-        if (event === "PASSWORD_RECOVERY" && session) {
-          setTimeout(() => cuffiHandlePasswordRecovery(session), 0);
-          return;
-        }
+      const { data: { session } } = await client.auth.getSession();
+      if (session) await startWithSession(session);
 
+      client.auth.onAuthStateChange((_event, session) => {
         if (session) startWithSession(session);
         else {
           user = null;
@@ -1240,20 +1209,6 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
           clearInterval(pullTimer);
         }
       });
-
-      const { data: { session } } = await client.auth.getSession();
-
-      // Fallback për recovery links që browser-i i ka përpunuar para listener-it.
-      const recoveryInUrl =
-        /type=recovery/i.test(location.hash) ||
-        /type=recovery/i.test(location.search);
-
-      if (session && recoveryInUrl) {
-        await cuffiHandlePasswordRecovery(session);
-      } else if (session) {
-        await startWithSession(session);
-      }
-
     } catch (e) {
       console.error("Cuffi Supabase init:", e);
     }
