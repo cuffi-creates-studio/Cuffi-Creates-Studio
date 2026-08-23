@@ -969,3 +969,213 @@ function showToast(title, message) {
   setTimeout(() => toast.remove(), 5500);
 }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
+
+
+
+/* ===== CUFFI SUPABASE SYNC (SHTESË E IZOLUAR) =====
+   Nuk ndryshon pamjen apo funksionet ekzistuese.
+   Sinkronizon localStorage midis PC dhe telefonit kur ka Supabase session.
+*/
+(function () {
+  const CUFFI_SB_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
+  const CUFFI_SB_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
+  const CUFFI_SB_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  let client = null;
+  let user = null;
+  let applying = false;
+  let started = false;
+  let pullTimer = null;
+  let queue = new Map();
+  let queueTimer = null;
+
+  function ignored(k) {
+    return !k || /^sb-.*-auth-token$/.test(k) || k === "cuffi_cloud_last_sync";
+  }
+
+  function loadSupabase() {
+    if (window.supabase?.createClient) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-cuffi-supabase]');
+      if (existing) {
+        existing.addEventListener('load', resolve, { once: true });
+        existing.addEventListener('error', reject, { once: true });
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = CUFFI_SB_CDN;
+      s.async = true;
+      s.dataset.cuffiSupabase = "1";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  function wrap(v) { return { raw: String(v ?? "") }; }
+  function unwrap(v) {
+    if (v && typeof v === "object" && Object.prototype.hasOwnProperty.call(v, "raw")) return String(v.raw ?? "");
+    if (typeof v === "string") return v;
+    return JSON.stringify(v ?? null);
+  }
+
+  async function pushKey(k, v) {
+    if (!client || !user || applying || ignored(k)) return;
+    const { error } = await client.from("cuffi_sync").upsert({
+      user_id: user.id,
+      key: k,
+      value: wrap(v),
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id,key" });
+    if (error) console.error("Cuffi sync push:", k, error);
+  }
+
+  async function deleteKey(k) {
+    if (!client || !user || applying || ignored(k)) return;
+    const { error } = await client.from("cuffi_sync")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("key", k);
+    if (error) console.error("Cuffi sync delete:", k, error);
+  }
+
+  function queuePush(k, v) {
+    if (!user || applying || ignored(k)) return;
+    queue.set(k, v);
+    clearTimeout(queueTimer);
+    queueTimer = setTimeout(async () => {
+      const batch = [...queue.entries()];
+      queue.clear();
+      for (const [key, val] of batch) await pushKey(key, val);
+    }, 450);
+  }
+
+  async function pushAllLocal() {
+    const rows = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (ignored(k)) continue;
+      rows.push({
+        user_id: user.id,
+        key: k,
+        value: wrap(localStorage.getItem(k)),
+        updated_at: new Date().toISOString()
+      });
+    }
+    for (let i = 0; i < rows.length; i += 40) {
+      const { error } = await client.from("cuffi_sync")
+        .upsert(rows.slice(i, i + 40), { onConflict: "user_id,key" });
+      if (error) throw error;
+    }
+  }
+
+  async function pullCloud() {
+    if (!client || !user) return;
+    const { data, error } = await client.from("cuffi_sync")
+      .select("key,value")
+      .eq("user_id", user.id);
+    if (error) {
+      console.error("Cuffi sync pull:", error);
+      return;
+    }
+    let changed = false;
+    applying = true;
+    try {
+      for (const row of (data || [])) {
+        if (ignored(row.key)) continue;
+        const incoming = unwrap(row.value);
+        if (localStorage.getItem(row.key) !== incoming) {
+          localStorage.setItem(row.key, incoming);
+          changed = true;
+        }
+      }
+    } finally {
+      applying = false;
+    }
+    if (changed) {
+      try {
+        renderAllEventViews?.();
+        renderWorkHistory?.();
+        renderRealStats?.();
+        renderNotes?.();
+        renderGallery?.();
+        updateDateGreeting?.();
+      } catch (_) {}
+    }
+  }
+
+  async function startWithSession(session) {
+    if (!session?.user || started) return;
+    user = session.user;
+    started = true;
+
+    const { data, error } = await client.from("cuffi_sync")
+      .select("key")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (error) {
+      console.error("Cuffi sync start:", error);
+      started = false;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      // Pajisja e parë me të dhënat ekzistuese i ngarkon në cloud.
+      await pushAllLocal();
+    } else {
+      await pullCloud();
+    }
+
+    clearInterval(pullTimer);
+    pullTimer = setInterval(pullCloud, 5000);
+  }
+
+  async function initCloud() {
+    try {
+      await loadSupabase();
+      client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
+      });
+
+      const { data: { session } } = await client.auth.getSession();
+      if (session) await startWithSession(session);
+
+      client.auth.onAuthStateChange((_event, session) => {
+        if (session) startWithSession(session);
+        else {
+          user = null;
+          started = false;
+          clearInterval(pullTimer);
+        }
+      });
+    } catch (e) {
+      console.error("Cuffi Supabase init:", e);
+    }
+  }
+
+  // Mos prekim funksionet ekzistuese: dëgjojmë ndryshimet e storage-it.
+  window.addEventListener("storage", e => {
+    if (!e.key || ignored(e.key) || applying) return;
+    if (e.newValue === null) deleteKey(e.key);
+    else queuePush(e.key, e.newValue);
+  });
+
+  // Për ndryshimet që bëhen në të njëjtën faqe.
+  const originalSetItem = Storage.prototype.setItem;
+  const originalRemoveItem = Storage.prototype.removeItem;
+
+  Storage.prototype.setItem = function (k, v) {
+    originalSetItem.call(this, k, v);
+    if (this === localStorage) queuePush(String(k), String(v));
+  };
+  Storage.prototype.removeItem = function (k) {
+    originalRemoveItem.call(this, k);
+    if (this === localStorage) deleteKey(String(k));
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCloud, { once: true });
+  } else {
+    initCloud();
+  }
+})();

@@ -1239,5 +1239,89 @@ function closeImageViewer() {
     <img id="fullImageView" src="" style="max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); object-fit: contain;">
 </div>
 
+
+<script id="cuffi-supabase-inventory-sync">
+/* SHTESË E IZOLUAR: sinkronizon vetëm inventarin LocalForage me cuffi_sync.
+   CSS/HTML/funksionet ekzistuese nuk ndryshohen. */
+(function(){
+  const URL="https://xvnvzadfteklfqaiqdrq.supabase.co";
+  const KEY="sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
+  const CDN="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  const CLOUD_KEY="__tufting_studio_inventory__";
+  let client=null,user=null,applying=false,timer=null;
+
+  function loadSB(){
+    if(window.supabase?.createClient) return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const s=document.createElement("script");
+      s.src=CDN; s.async=true; s.onload=resolve; s.onerror=reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function push(){
+    if(!client||!user||applying||!Array.isArray(window.inventory)) return;
+    const {error}=await client.from("cuffi_sync").upsert({
+      user_id:user.id,
+      key:CLOUD_KEY,
+      value:{inventory:window.inventory},
+      updated_at:new Date().toISOString()
+    },{onConflict:"user_id,key"});
+    if(error) console.error("Ngjyrat sync push:",error);
+  }
+
+  async function pull(){
+    if(!client||!user) return;
+    const {data,error}=await client.from("cuffi_sync")
+      .select("value")
+      .eq("user_id",user.id)
+      .eq("key",CLOUD_KEY)
+      .maybeSingle();
+    if(error){console.error("Ngjyrat sync pull:",error);return;}
+    if(data?.value?.inventory && Array.isArray(data.value.inventory)){
+      const incoming=data.value.inventory;
+      if(JSON.stringify(window.inventory||[])!==JSON.stringify(incoming)){
+        applying=true;
+        try{
+          window.inventory=incoming;
+          await localforage.setItem("tufting_studio_inventory",incoming);
+          if(typeof window.renderApp==="function") window.renderApp();
+        }finally{applying=false;}
+      }
+    }else if(Array.isArray(window.inventory) && window.inventory.length){
+      await push();
+    }
+  }
+
+  async function init(){
+    try{
+      await loadSB();
+      client=window.supabase.createClient(URL,KEY,{
+        auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}
+      });
+      const {data:{session}}=await client.auth.getSession();
+      user=session?.user||null;
+      if(!user) return;
+
+      await pull();
+
+      if(typeof window.saveData==="function"){
+        const oldSave=window.saveData;
+        window.saveData=async function(){
+          const r=await oldSave.apply(this,arguments);
+          if(!applying) await push();
+          return r;
+        };
+      }
+
+      clearInterval(timer);
+      timer=setInterval(pull,5000);
+    }catch(e){console.error("Ngjyrat Supabase init:",e);}
+  }
+
+  window.addEventListener("load",()=>setTimeout(init,150));
+})();
+</script>
+
 </body>
 </html>
