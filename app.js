@@ -917,7 +917,14 @@ function initAuth() {
   const overlay = $('#loginOverlay');
   const remembered = localStorage.getItem('cc_auth') === 'true';
   const session = sessionStorage.getItem('cc_auth') === 'true';
-  if (remembered || session) { overlay.classList.add('is-hidden'); return; }
+  const cloudReady = localStorage.getItem('cuffi_cloud_auth_ok') === 'true';
+
+  // Nëse aplikacioni mbahet mend lokalisht por Supabase s'ka bërë ende login,
+  // shfaq login-in vetëm këtë herë që të krijohet cloud session.
+  if ((remembered || session) && cloudReady) {
+    overlay.classList.add('is-hidden');
+    return;
+  }
   overlay.classList.remove('is-hidden');
   setTimeout(() => $('#loginUsername')?.focus(), 80);
   $('#togglePassword').onclick = () => {
@@ -939,9 +946,18 @@ function initAuth() {
         : { ok:false, error:'Supabase nuk është ngarkuar ende.' };
 
       if (!cloudResult.ok) {
-        // Mos e blloko hyrjen në aplikacion nëse Supabase nuk lidhet.
-        // Login-i lokal vazhdon normalisht; cloud sync thjesht mbetet joaktiv.
         console.warn('Supabase Auth nuk u lidh:', cloudResult.error);
+        localStorage.removeItem('cuffi_cloud_auth_ok');
+
+        // Hyrja lokale vazhdon, por përdoruesi njoftohet qartë pse cloud-i s'po mbushet.
+        setTimeout(() => {
+          alert(
+            'Aplikacioni u hap, por Cloud Sync nuk u lidh me Supabase.\n\n' +
+            'Shkaku më i zakonshëm: fjalëkalimi i user-it në Supabase nuk është i njëjtë ' +
+            'me fjalëkalimin që përdor te ky login.\n\n' +
+            'Të dhënat lokale nuk janë fshirë.'
+          );
+        }, 150);
       }
 
       $('#loginError').textContent = '';
@@ -959,6 +975,8 @@ function initAuth() {
 function logout() {
   localStorage.removeItem('cc_auth');
   sessionStorage.removeItem('cc_auth');
+  localStorage.removeItem('cuffi_cloud_auth_ok');
+  if (typeof window.cuffiSupabaseSignOut === 'function') window.cuffiSupabaseSignOut();
   setView('dashboard');
   $('#loginOverlay').classList.remove('is-hidden');
   $('#loginUsername').value = '';
@@ -1002,7 +1020,7 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
   let queueTimer = null;
 
   function ignored(k) {
-    return !k || /^sb-.*-auth-token$/.test(k) || k === "cuffi_cloud_last_sync";
+    return !k || /^sb-.*-auth-token$/.test(k) || k === "cuffi_cloud_last_sync" || k === "cuffi_cloud_auth_ok";
   }
 
   function loadSupabase() {
@@ -1153,10 +1171,22 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
       }
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) return { ok:false, error:error.message };
-      if (data?.session?.user) await startWithSession(data.session);
+      if (data?.session?.user) {
+        localStorage.setItem("cuffi_cloud_auth_ok", "true");
+        await startWithSession(data.session);
+      }
       return { ok:true };
     } catch (e) {
       return { ok:false, error:e?.message || String(e) };
+    }
+  };
+
+  window.cuffiSupabaseSignOut = async function() {
+    try {
+      localStorage.removeItem("cuffi_cloud_auth_ok");
+      if (client) await client.auth.signOut();
+    } catch (e) {
+      console.warn("Supabase signOut:", e);
     }
   };
 
