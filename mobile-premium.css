@@ -19,7 +19,7 @@
 
   /* top bar exactly like approved reference */
   .mp-header{height:98px;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:18px 24px 8px;position:relative;z-index:45;background:linear-gradient(180deg,rgba(5,15,37,.99),rgba(5,15,37,.92));border:0}
-  .mp-top-logo{width:82px;height:64px;object-fit:contain;justify-self:center;filter:drop-shadow(0 0 7px rgba(210,60,255,.16))}
+  .mp-top-logo{width:82px!important;height:64px!important;object-fit:contain!important;justify-self:center!important;display:block!important;opacity:1!important;visibility:visible!important;position:relative!important;z-index:999!important;filter:drop-shadow(0 0 7px rgba(210,60,255,.16))}
   .mp-header-btn{width:44px;height:44px;border:0!important;border-radius:0!important;background:transparent!important;color:#aab4cf;display:grid;place-items:center;font-size:25px;box-shadow:none!important;padding:0!important}
   .mp-menu-btn i{color:#d95cff;font-size:28px}.mp-bell-btn{position:relative}.mp-bell-btn i{font-size:24px}.mp-bell-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#d94cff;right:7px;top:7px;box-shadow:0 0 10px #d94cff}
 
