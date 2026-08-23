@@ -30,10 +30,22 @@ const storage = {
   set(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 };
 
-const AUTH_USER = "cuffi";
-const AUTH_PASS = "11asdrosagzimi";
-const AUTH_EMAIL = "gezimtahiri1@web.de";
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
+
+// Mos lejo kredenciale aksidentale në URL / history të browser-it.
+(function cleanSensitiveLoginUrl() {
+  try {
+    const u = new URL(window.location.href);
+    let changed = false;
+    for (const key of ['email', 'password', 'pass', 'pwd']) {
+      if (u.searchParams.has(key)) {
+        u.searchParams.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) history.replaceState({}, document.title, u.pathname + u.search + u.hash);
+  } catch (_) {}
+})();
 
 const UI_TRANSLATIONS = {
   sq: {
@@ -931,15 +943,10 @@ function initAuth() {
   $('#loginForm').addEventListener('submit', async event => {
     event.preventDefault();
 
-    const typedUser = $('#loginUsername').value.trim();
+    const email = $('#loginUsername').value.trim();
     const pass = $('#loginPassword').value;
 
-    // Prano emailin ose aliasin e vjetër "cuffi", por autentikimi real bëhet vetëm në Supabase.
-    const allowedUser =
-      typedUser.toLowerCase() === AUTH_EMAIL.toLowerCase() ||
-      typedUser === AUTH_USER;
-
-    if (!allowedUser || !pass) {
+    if (!email || !pass) {
       $('#loginError').textContent = 'Shkruaj emailin dhe fjalëkalimin.';
       return;
     }
@@ -951,13 +958,15 @@ function initAuth() {
       return;
     }
 
-    const result = await window.cuffiSupabaseSignIn(AUTH_EMAIL, pass);
+    const result = await window.cuffiSupabaseSignIn(email, pass);
 
     if (!result.ok) {
       localStorage.removeItem('cc_auth');
       sessionStorage.removeItem('cc_auth');
       localStorage.removeItem('cuffi_cloud_auth_ok');
-      $('#loginError').textContent = 'Emaili ose fjalëkalimi i Supabase është gabim.';
+      $('#loginError').textContent = result.error
+        ? 'Supabase: ' + result.error
+        : 'Emaili ose fjalëkalimi është gabim.';
       $('#loginPassword').select();
       return;
     }
@@ -1028,7 +1037,7 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
   let queueTimer = null;
 
   function ignored(k) {
-    return !k || /^sb-.*-auth-token$/.test(k) || k === "cuffi_cloud_last_sync";
+    return !k || /^sb-.*-auth-token$/.test(k) || ["cuffi_cloud_last_sync", "cuffi_cloud_auth_ok", "cc_auth"].includes(k);
   }
 
   function loadSupabase() {
@@ -1174,8 +1183,6 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
       await loadSupabase();
       if (!client) {
         client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
-        // client exposed only in-page for logout/debug
-
           auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
         });
       }
