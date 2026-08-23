@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Supabase - Cuffi</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#0b1020;color:#fff;max-width:620px;margin:40px auto;padding:20px}
+.card{background:#121a33;border:1px solid #2b3b70;border-radius:16px;padding:20px}
+input,button{width:100%;box-sizing:border-box;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #3d4d80}
+input{background:#0d1530;color:#fff}
+button{background:#6d5dfc;color:#fff;font-weight:700;cursor:pointer}
+pre{white-space:pre-wrap;background:#08101f;padding:14px;border-radius:10px;border:1px solid #26345f;min-height:80px}
+.ok{color:#5ee6a8}.bad{color:#ff7d8c}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>Test i Supabase Auth</h2>
+<p>Ky file nuk ndryshon asgjë në aplikacion. Vetëm teston login-in dhe tabelën <b>cuffi_sync</b>.</p>
+<input id="email" type="email" value="gezimtahiri1@web.de" autocomplete="username">
+<input id="pass" type="password" placeholder="Fjalëkalimi i Supabase" autocomplete="current-password">
+<button id="go">TESTO LOGIN</button>
+<pre id="out">Në pritje...</pre>
+</div>
+<script>
+const URL="https://xvnvzadfteklfqaiqdrq.supabase.co";
+const KEY="sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
+const client=supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+const out=document.getElementById("out");
+function show(msg,ok=false){out.className=ok?"ok":"bad";out.textContent=msg;}
+document.getElementById("go").onclick=async()=>{
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("pass").value;
+  show("Po provohet login...");
+  try{
+    const {data,error}=await client.auth.signInWithPassword({email,password});
+    if(error){show("LOGIN DËSHTOI:\n"+error.message+"\n\nStatus: "+(error.status||""));return;}
+    const user=data.user;
+    const {data:rows,error:dbError}=await client.from("cuffi_sync").select("key").limit(5);
+    if(dbError){
+      show("LOGIN SUKSES ✅\nUser ID: "+user.id+"\n\nPor tabela cuffi_sync dha gabim:\n"+dbError.message,true);
+      return;
+    }
+    show("LOGIN SUKSES ✅\nUser ID: "+user.id+"\nEmail: "+user.email+"\n\ncuffi_sync lexohet normalisht.\nRreshta të parë: "+rows.length,true);
+    await client.auth.signOut();
+  }catch(e){
+    show("GABIM TEKNIK:\n"+(e?.message||String(e)));
+  }
+};
+</script>
+</body>
+</html>
