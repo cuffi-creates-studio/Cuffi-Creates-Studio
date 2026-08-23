@@ -30,22 +30,10 @@ const storage = {
   set(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 };
 
+const AUTH_USER = "cuffi";
+const AUTH_PASS = "11asdrosagzimi";
+const AUTH_EMAIL = "gezimtahiri1@web.de";
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
-
-// Mos lejo kredenciale aksidentale në URL / history të browser-it.
-(function cleanSensitiveLoginUrl() {
-  try {
-    const u = new URL(window.location.href);
-    let changed = false;
-    for (const key of ['email', 'password', 'pass', 'pwd']) {
-      if (u.searchParams.has(key)) {
-        u.searchParams.delete(key);
-        changed = true;
-      }
-    }
-    if (changed) history.replaceState({}, document.title, u.pathname + u.search + u.hash);
-  } catch (_) {}
-})();
 
 const UI_TRANSLATIONS = {
   sq: {
@@ -689,8 +677,71 @@ function renderRevenueChart(invoices) {
 }
 
 function initWorkHistory() {
-  $('#workForm').addEventListener('submit',e=>{ e.preventDefault(); if(!state.pendingWorkSession)return; const item={...state.pendingWorkSession,description:$('#workDescription').value.trim()||'Punë në studio'}; const list=workSessions(); list.unshift(item); saveWorkSessions(list); state.pendingWorkSession=null; $('#workDialog').close(); renderWorkHistory(); renderRealStats(); showToast('Seanca u ruajt',`${formatHumanDuration(item.duration)} · ${item.description}`); });
-  $('#discardWorkSession').addEventListener('click',()=>{state.pendingWorkSession=null;});
+  const dialog = $('#workDialog');
+  const form = $('#workForm');
+  const discardBtn = $('#discardWorkSession');
+  const saveBtn = $('#saveWorkSession');
+  const closeBtn = dialog?.querySelector('.modal-head button');
+
+  // Këto dy butona nuk duhet të bëjnë submit të formës.
+  if (discardBtn) discardBtn.type = 'button';
+  if (closeBtn) closeBtn.type = 'button';
+  if (saveBtn) saveBtn.type = 'submit';
+
+  const closeWithoutSaving = () => {
+    state.pendingWorkSession = null;
+    if (dialog?.open) dialog.close();
+  };
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeWithoutSaving();
+    });
+  }
+
+  if (discardBtn) {
+    discardBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeWithoutSaving();
+    });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!state.pendingWorkSession) {
+      if (dialog?.open) dialog.close();
+      return;
+    }
+
+    const item = {
+      ...state.pendingWorkSession,
+      description: $('#workDescription').value.trim() || 'Punë në studio'
+    };
+
+    const list = workSessions();
+    list.unshift(item);
+    saveWorkSessions(list);
+    state.pendingWorkSession = null;
+
+    if (dialog?.open) dialog.close();
+
+    renderWorkHistory();
+    renderRealStats();
+    showToast(
+      'Seanca u ruajt',
+      `${formatHumanDuration(item.duration)} · ${item.description}`
+    );
+  });
+
+  // Nëse dialogu mbyllet me Escape, mos ruaj seancën.
+  dialog?.addEventListener('cancel', e => {
+    e.preventDefault();
+    closeWithoutSaving();
+  });
+
   $('#exportWorkCsv').addEventListener('click',exportWorkCsv);
   $('#clearWorkHistory').addEventListener('click',()=>{if(confirm('Ta pastroj historikun e orëve?')){saveWorkSessions([]);renderWorkHistory();}});
   renderWorkHistory();
@@ -943,10 +994,15 @@ function initAuth() {
   $('#loginForm').addEventListener('submit', async event => {
     event.preventDefault();
 
-    const email = $('#loginUsername').value.trim();
+    const typedUser = $('#loginUsername').value.trim();
     const pass = $('#loginPassword').value;
 
-    if (!email || !pass) {
+    // Prano emailin ose aliasin e vjetër "cuffi", por autentikimi real bëhet vetëm në Supabase.
+    const allowedUser =
+      typedUser.toLowerCase() === AUTH_EMAIL.toLowerCase() ||
+      typedUser === AUTH_USER;
+
+    if (!allowedUser || !pass) {
       $('#loginError').textContent = 'Shkruaj emailin dhe fjalëkalimin.';
       return;
     }
@@ -958,15 +1014,13 @@ function initAuth() {
       return;
     }
 
-    const result = await window.cuffiSupabaseSignIn(email, pass);
+    const result = await window.cuffiSupabaseSignIn(AUTH_EMAIL, pass);
 
     if (!result.ok) {
       localStorage.removeItem('cc_auth');
       sessionStorage.removeItem('cc_auth');
       localStorage.removeItem('cuffi_cloud_auth_ok');
-      $('#loginError').textContent = result.error
-        ? 'Supabase: ' + result.error
-        : 'Emaili ose fjalëkalimi është gabim.';
+      $('#loginError').textContent = 'Emaili ose fjalëkalimi i Supabase është gabim.';
       $('#loginPassword').select();
       return;
     }
@@ -1037,7 +1091,7 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
   let queueTimer = null;
 
   function ignored(k) {
-    return !k || /^sb-.*-auth-token$/.test(k) || ["cuffi_cloud_last_sync", "cuffi_cloud_auth_ok", "cc_auth"].includes(k);
+    return !k || /^sb-.*-auth-token$/.test(k) || k === "cuffi_cloud_last_sync";
   }
 
   function loadSupabase() {
@@ -1183,6 +1237,8 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
       await loadSupabase();
       if (!client) {
         client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
+        // client exposed only in-page for logout/debug
+
           auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
         });
       }
