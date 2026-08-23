@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventari i Ngjyrave & Materialeve - Tufting Studio</title>
     <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
         :root {
             --card-bg: #ffffff;
@@ -421,6 +422,111 @@
     // DATA INITIALIZATION WITH LOCALFORAGE (INDEXEDDB)
     let inventory = [];
 
+    const SUPABASE_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const INVENTORY_TABLE = "user_inventory";
+    const INVENTORY_BUCKET = "inventory-images";
+
+    async function getCurrentUser() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        return session?.user || null;
+    }
+
+    function isSupabaseImageUrl(value) {
+        return typeof value === "string" && value.includes("/storage/v1/object/public/" + INVENTORY_BUCKET + "/");
+    }
+
+    function dataUrlToBlob(dataUrl) {
+        const parts = dataUrl.split(",");
+        const mime = (parts[0].match(/data:(.*?);/) || [])[1] || "image/jpeg";
+        const binary = atob(parts[1]);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new Blob([bytes], { type: mime });
+    }
+
+    function mimeFromName(name) {
+        const ext = String(name || "").toLowerCase().split(".").pop();
+        if (ext === "png") return "image/png";
+        if (ext === "webp") return "image/webp";
+        if (ext === "gif") return "image/gif";
+        return "image/jpeg";
+    }
+
+    async function uploadBlobToSupabase(blob, originalName = "photo.jpg") {
+        const user = await getCurrentUser();
+        if (!user) throw new Error("Nuk ka përdorues të kyçur në Supabase.");
+
+        const ext = (String(originalName).split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "jpg";
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+            .from(INVENTORY_BUCKET)
+            .upload(path, blob, { contentType: blob.type || mimeFromName(originalName), upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabaseClient.storage.from(INVENTORY_BUCKET).getPublicUrl(path);
+        return data.publicUrl;
+    }
+
+    async function uploadFileToSupabase(file) {
+        return uploadBlobToSupabase(file, file.name || "photo.jpg");
+    }
+
+    async function migrateOneImageToSupabase(item) {
+        if (!item?.img || isSupabaseImageUrl(item.img) || /^https?:\/\//i.test(item.img)) return false;
+
+        try {
+            let blob = null;
+            let name = `inventory-${item.id}.jpg`;
+
+            if (String(item.img).startsWith("data:image")) {
+                blob = dataUrlToBlob(item.img);
+            } else if (typeof require === "function") {
+                const fs = require("fs");
+                const path = require("path");
+                if (fs.existsSync(item.img)) {
+                    const buffer = fs.readFileSync(item.img);
+                    name = path.basename(item.img);
+                    blob = new Blob([buffer], { type: mimeFromName(name) });
+                }
+            }
+
+            if (!blob) return false;
+            item.img = await uploadBlobToSupabase(blob, name);
+            return true;
+        } catch (error) {
+            console.error("Fotoja nuk u migrue në Supabase:", item?.name, error);
+            return false;
+        }
+    }
+
+    async function migrateExistingImagesToSupabase() {
+        let changed = false;
+        for (const item of inventory) {
+            if (await migrateOneImageToSupabase(item)) changed = true;
+        }
+        return changed;
+    }
+
+    async function saveCloudInventory() {
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const { error } = await supabaseClient
+            .from(INVENTORY_TABLE)
+            .upsert({
+                user_id: user.id,
+                inventory,
+                updated_at: new Date().toISOString()
+            }, { onConflict: "user_id" });
+
+        if (error) throw error;
+    }
+
+
     const defaultItems = [
         { id: 1, name: "E bardhë", category: "500g", qty: 32, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+White" },
         { id: 2, name: "Rozë", category: "500g", qty: 24, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+Pink" },
@@ -437,43 +543,42 @@
 
 async function loadData() {
     try {
+        const localSaved = await localforage.getItem('tufting_studio_inventory');
+        const user = await getCurrentUser();
 
-        const savedData = await localforage.getItem(
-            'tufting_studio_inventory'
-        );
+        if (user) {
+            const { data, error } = await supabaseClient
+                .from(INVENTORY_TABLE)
+                .select('inventory, updated_at')
+                .eq('user_id', user.id)
+                .maybeSingle();
 
-        if (
-            savedData &&
-            Array.isArray(savedData) &&
-            savedData.length > 0
-        ) {
-            inventory = savedData;
+            if (error) throw error;
 
-            console.log(
-                "Inventari u ngarkua:",
-                inventory.length,
-                "produkte"
-            );
-
+            if (data && Array.isArray(data.inventory) && data.inventory.length > 0) {
+                inventory = data.inventory;
+                await localforage.setItem('tufting_studio_inventory', inventory);
+                console.log("Inventari u ngarkua nga Supabase:", inventory.length);
+            } else if (Array.isArray(localSaved) && localSaved.length > 0) {
+                inventory = localSaved;
+                await migrateExistingImagesToSupabase();
+                await localforage.setItem('tufting_studio_inventory', inventory);
+                await saveCloudInventory();
+                console.log("Inventari lokal u dërgua në Supabase:", inventory.length);
+            } else {
+                inventory = defaultItems;
+                await localforage.setItem('tufting_studio_inventory', inventory);
+            }
+        } else if (Array.isArray(localSaved) && localSaved.length > 0) {
+            inventory = localSaved;
         } else {
-
             inventory = defaultItems;
-
-            await saveData();
-
-            console.log(
-                "Nuk kishte inventar të ruajtur. U përdor defaultItems."
-            );
+            await localforage.setItem('tufting_studio_inventory', inventory);
         }
-
     } catch (err) {
-
-        console.error(
-            "Gabim në leximin e të dhënave:",
-            err
-        );
-
-        inventory = defaultItems;
+        console.error("Gabim gjatë ngarkimit të inventarit:", err);
+        const localSaved = await localforage.getItem('tufting_studio_inventory');
+        inventory = (Array.isArray(localSaved) && localSaved.length > 0) ? localSaved : defaultItems;
     }
 
     renderApp();
@@ -867,31 +972,14 @@ async function changeCardImage(id, event) {
     const item = inventory.find(i => Number(i.id) === Number(id));
     if (!item) return;
 
-    const reader = new FileReader();
-
-    reader.onload = async function(e) {
-        try {
-            if (typeof require !== 'function') {
-                throw new Error('Ndryshimi i fotos duhet të bëhet nga aplikacioni Electron.');
-            }
-
-            const { ipcRenderer } = require('electron');
-            const result = await ipcRenderer.invoke('save-inventory-image', { dataUrl: e.target.result });
-
-            if (!result || !result.success) {
-                throw new Error(result?.error || 'Fotoja nuk u ruajt.');
-            }
-
-            item.img = result.path;
-            await saveData();
-            renderApp();
-        } catch (error) {
-            console.error('Gabim gjatë ndryshimit të fotos:', error);
-            alert('Fotoja nuk u ndryshua: ' + error.message);
-        }
-    };
-
-    reader.readAsDataURL(file);
+    try {
+        item.img = await uploadFileToSupabase(file);
+        await saveData();
+        renderApp();
+    } catch (error) {
+        console.error('Gabim gjatë ndryshimit të fotos:', error);
+        alert('Fotoja nuk u ndryshua: ' + error.message);
+    }
 }
 
 // ======================================================
@@ -899,26 +987,16 @@ async function changeCardImage(id, event) {
 // ======================================================
 
 async function saveData() {
-
     try {
+        await localforage.setItem('tufting_studio_inventory', inventory);
 
-        await localforage.setItem(
-            'tufting_studio_inventory',
-            inventory
-        );
+        const user = await getCurrentUser();
+        if (user) await saveCloudInventory();
 
-        console.log(
-            "Inventari u ruajt:",
-            inventory.length,
-            "produkte"
-        );
-
+        console.log("Inventari u ruajt:", inventory.length);
     } catch (err) {
-
-        console.error(
-            "Gabim në ruajtje:",
-            err
-        );
+        console.error("Gabim në ruajtje:", err);
+        alert("Inventari u ruajt lokalisht, por sinkronizimi me Supabase dështoi: " + err.message);
     }
 }
 
@@ -962,7 +1040,7 @@ async function deleteItem(id) {
 
     // CONVERT 1000x1000 FILE TO DATAURL AND SAVE
  async function saveNewItem() {
-    const name = document.getElementById('itemName').value;
+    const name = document.getElementById('itemName').value.trim();
     const category = document.getElementById('itemCategory').value;
     const qty = parseInt(document.getElementById('itemQty').value) || 0;
     const price = parseFloat(document.getElementById('itemPrice').value) || 0.0;
@@ -973,50 +1051,30 @@ async function deleteItem(id) {
         return;
     }
 
-    const file = fileInput.files[0];
-    const reader = new FileReader();
+    try {
+        const imageUrl = await uploadFileToSupabase(fileInput.files[0]);
 
-    reader.onload = async function (e) {
-        try {
-            const { ipcRenderer } = require("electron");
+        inventory.push({
+            id: Date.now(),
+            name,
+            category,
+            qty,
+            price,
+            img: imageUrl
+        });
 
-            // Ruaj foton si file normal në disk
-            const result = await ipcRenderer.invoke(
-                "save-inventory-image",
-                {
-                    dataUrl: e.target.result
-                }
-            );
+        await saveData();
+        renderApp();
+        closeModal();
 
-            if (!result.success) {
-                throw new Error(result.error);
-            }
-
-            const newItem = {
-                id: Date.now(),
-                name: name,
-                category: category,
-                qty: qty,
-                price: price,
-
-                // Tani ruajmë vetëm rrugën e fotos
-                img: result.path
-            };
-
-            inventory.push(newItem);
-
-            await saveData();
-
-            renderApp();
-            closeModal();
-
-        } catch (error) {
-            console.error("Gabim gjatë ruajtjes së fotos:", error);
-            alert("Fotoja nuk u ruajt: " + error.message);
-        }
-    };
-
-    reader.readAsDataURL(file);
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemQty').value = '';
+        document.getElementById('itemPrice').value = '';
+        document.getElementById('itemImage').value = '';
+    } catch (error) {
+        console.error("Gabim gjatë ruajtjes së fotos:", error);
+        alert("Fotoja nuk u ruajt në Supabase: " + error.message);
+    }
 }
     // FILTER FUNCTION FOR YARN
     let activeYarnFilter = '500g';
