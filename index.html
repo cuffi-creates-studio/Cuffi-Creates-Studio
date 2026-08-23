@@ -385,46 +385,51 @@
   </script>
   
 
-<style id="fix-only-three-bottom-overflow">
-@media (min-width: 700px) {
-  .sidebar {
-    overflow: hidden !important;
-  }
-
-  .side-nav {
-    overflow: hidden !important;
-  }
-}
-</style>
-
-<script id="fix-only-three-bottom-overflow-js">
+<script id="remove-only-bottom-ghosts">
 (function () {
-  const targets = new Set(["gallery", "backup", "settings"]);
+  const names = new Set(["Galeria", "Backup & Restore", "Cilësimet"]);
 
-  function fixOnlyBottomGhosts() {
+  function cleanGhosts() {
     if (!window.matchMedia("(min-width: 700px)").matches) return;
 
     const sidebar = document.querySelector(".sidebar");
     if (!sidebar) return;
 
-    const sideRect = sidebar.getBoundingClientRect();
+    const sr = sidebar.getBoundingClientRect();
 
-    document.querySelectorAll(".side-nav .nav-item[data-view]").forEach(btn => {
-      if (!targets.has(btn.dataset.view)) return;
+    document.querySelectorAll("button, a").forEach(el => {
+      const label = String(el.textContent || "")
+        .replace(/\s+/g, " ")
+        .trim();
 
-      const r = btn.getBoundingClientRect();
+      if (!names.has(label)) return;
 
-      /* Vetëm nëse ai buton ka dalë fizikisht jashtë sidebar-it poshtë.
-         Kur është normal brenda sidebar-it, nuk preket. */
-      if (r.top >= sideRect.bottom || r.bottom > sideRect.bottom + 2) {
-        btn.style.setProperty("display", "none", "important");
+      /* Këto janë butonat normalë të sidebar-it: MOS I PREK. */
+      if (sidebar.contains(el)) return;
+
+      const r = el.getBoundingClientRect();
+
+      /* Hiq vetëm kopjet e vogla që dalin poshtë, jashtë sidebar-it. */
+      const outsideSidebar = r.left >= sr.right - 4;
+      const nearViewportBottom = r.top >= window.innerHeight - 120;
+      const looksLikeGhost = r.height <= 55;
+
+      if (outsideSidebar && nearViewportBottom && looksLikeGhost) {
+        el.style.setProperty("display", "none", "important");
       }
     });
   }
 
-  window.addEventListener("load", fixOnlyBottomGhosts);
-  window.addEventListener("resize", fixOnlyBottomGhosts);
-  setTimeout(fixOnlyBottomGhosts, 300);
+  window.addEventListener("load", cleanGhosts);
+  window.addEventListener("resize", cleanGhosts);
+  window.addEventListener("scroll", cleanGhosts, { passive: true });
+
+  const observer = new MutationObserver(cleanGhosts);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  setTimeout(cleanGhosts, 100);
+  setTimeout(cleanGhosts, 500);
+  setTimeout(cleanGhosts, 1500);
 })();
 </script>
 
