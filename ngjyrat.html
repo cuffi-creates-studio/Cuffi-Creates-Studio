@@ -506,6 +506,222 @@
       }
     }
   </style>
+
+<style id="cuffi-desktop-reference-exact">
+/* =========================================================
+   DESKTOP ONLY — pamja sipas fotos reference #1.
+   Telefoni <=699px nuk preket fare.
+   ========================================================= */
+@media (min-width: 700px) {
+  html, body {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.cc-page.cc-colors {
+    padding: 16px !important;
+    overflow-x: hidden !important;
+    background: linear-gradient(135deg, #f3123b, #cc5a99, #b805f3) !important;
+  }
+
+  .dashboard-container {
+    display: grid !important;
+    grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr) !important;
+    gap: 24px !important;
+    width: 100% !important;
+    max-width: 1600px !important;
+    margin: 0 auto !important;
+    align-items: start !important;
+  }
+
+  .dashboard-container > .section-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 24px !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+    background: rgba(45, 35, 48, 0.75) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,.40) !important;
+  }
+
+  .header-title h1,
+  .section-box h1 {
+    font-size: 32px !important;
+    line-height: 1.08 !important;
+  }
+
+  .header-title p,
+  .section-box p {
+    font-size: 14px !important;
+    margin-top: 4px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .top-controls,
+  .custom-filter-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .custom-filter-row .btn-filter,
+  .btn-filter {
+    min-width: 92px !important;
+    width: auto !important;
+    padding: 8px 18px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+
+  .search-bar-row {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  .search-input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    padding: 10px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .search-bar-row .btn-action,
+  .btn-action {
+    padding: 10px 16px !important;
+    border-radius: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .category-title {
+    font-size: 16px !important;
+    margin: 16px 0 12px 0 !important;
+  }
+
+  /* Foto #1: 5 karta leshi në rresht. */
+  #grid500g.cards-grid,
+  #grid50g.cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  /* Foto #1: 2 karta materialesh në rresht. */
+  #gridMaterials.cards-grid,
+  .material-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  .card {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+  }
+
+  .card-img-container,
+  .card-img-container[style] {
+    width: 100% !important;
+    height: 110px !important;
+    min-height: 110px !important;
+    margin-bottom: 8px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #f9fafb !important;
+  }
+
+  .card-img-container img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .card-title {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important;
+    text-align: left !important;
+  }
+
+  .card-weight {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+    text-align: left !important;
+  }
+
+  .card-status-row {
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .card-price {
+    font-size: 13px !important;
+    text-align: left !important;
+  }
+
+  .qty-controls {
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+    margin-top: 8px !important;
+    padding: 2px !important;
+    border-radius: 8px !important;
+    background: #f3effa !important;
+  }
+
+  .qty-controls > span {
+    height: auto !important;
+    background: transparent !important;
+    font-size: inherit !important;
+  }
+
+  .btn-qty {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 6px !important;
+  }
+
+  .alert-box {
+    padding: 16px !important;
+    margin-top: 20px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Mban 5/2 kolonat edhe në desktop më të ngushtë, si layout-i reference. */
+@media (min-width: 700px) and (max-width: 1050px) {
+  .dashboard-container {
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr) !important;
+    gap: 16px !important;
+  }
+  .dashboard-container > .section-box { padding: 16px !important; }
+  #grid500g.cards-grid,
+  #grid50g.cards-grid { gap: 10px !important; }
+  #gridMaterials.cards-grid,
+  .material-grid { gap: 10px !important; }
+  .card { padding: 9px !important; }
+  .card-img-container,
+  .card-img-container[style] { height: 96px !important; min-height: 96px !important; }
+}
+</style>
+
 </head>
 <body class="cc-page cc-colors">
 
