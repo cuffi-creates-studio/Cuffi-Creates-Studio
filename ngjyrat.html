@@ -2533,5 +2533,87 @@ function closeImageViewer() {
 })();
 </script>
 
+
+<style id="cuffi-tablet-only-fix">
+/* TABLET ONLY: telefoni dhe PC nuk preken */
+@media (min-width: 700px) and (max-width: 1199px) {
+  body.cc-page.cc-colors {
+    padding: 12px !important;
+  }
+
+  .dashboard-container {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .dashboard-container > .section-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Leshi sipër, materialet poshtë */
+  .dashboard-container > .section-box:nth-child(1) {
+    order: 1 !important;
+  }
+
+  .dashboard-container > .section-box:nth-child(2) {
+    order: 2 !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  button[data-filter-btn="material"] {
+    display: none !important;
+  }
+
+  /* 4 karta leshi në rresht në tablet */
+  #grid500g.cards-grid,
+  #grid50g.cards-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* 3 materiale në rresht në tablet */
+  #gridMaterials.cards-grid,
+  .material-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .card-img-container,
+  .card-img-container[style] {
+    height: 150px !important;
+    min-height: 150px !important;
+  }
+
+  .card-title {
+    font-size: 13px !important;
+  }
+
+  .qty-controls {
+    grid-template-columns: 34px minmax(50px, 1fr) 34px !important;
+  }
+
+  .qty-controls > span,
+  .qty-controls > span[style] {
+    font-size: 15px !important;
+    color: #111827 !important;
+    opacity: 1 !important;
+  }
+
+  .btn-qty,
+  .qty-controls .btn-qty {
+    font-size: 20px !important;
+    color: #6d28d9 !important;
+    opacity: 1 !important;
+  }
+}
+</style>
+
 </body>
 </html>
