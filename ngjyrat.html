@@ -785,190 +785,6 @@
 }
 </style>
 
-
-<style id="cuffi-pc-final-layout">
-/* =========================================================
-   VETËM PC / DESKTOP
-   Telefoni nuk preket.
-   ========================================================= */
-@media (min-width: 700px) {
-  body.cc-page.cc-colors {
-    padding: 16px !important;
-    min-height: 0 !important;
-  }
-
-  .dashboard-container {
-    display: grid !important;
-    grid-template-columns: minmax(0, 2fr) minmax(390px, 1fr) !important;
-    gap: 24px !important;
-    align-items: start !important;
-    max-width: 1700px !important;
-    margin: 0 auto !important;
-  }
-
-  .dashboard-container > .section-box {
-    height: auto !important;
-    min-height: 0 !important;
-    align-self: start !important;
-    overflow: visible !important;
-  }
-
-  /* Materialet qëndrojnë gjithmonë të hapura në të djathtë. */
-  .dashboard-container > .section-box:nth-child(2) {
-    display: block !important;
-  }
-
-  /* Në PC s'na duhet butoni "Materiale", sepse paneli është gjithmonë hapur djathtas. */
-  [data-filter-btn="material"] {
-    display: none !important;
-  }
-
-  /* 5 karta leshi në rresht */
-  #grid500g.cards-grid,
-  #grid50g.cards-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 14px !important;
-  }
-
-  /* 2 materiale në rresht */
-  #gridMaterials.cards-grid,
-  .material-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 14px !important;
-  }
-
-  .card {
-    padding: 10px !important;
-    border-radius: 15px !important;
-    background: #0d2854 !important;
-    color: #fff !important;
-    overflow: hidden !important;
-  }
-
-  /* FOTO MË TË MËDHA NË PC */
-  .card-img-container,
-  .card-img-container[style] {
-    width: 100% !important;
-    height: 148px !important;
-    min-height: 148px !important;
-    margin-bottom: 9px !important;
-    background: #fff !important;
-    border-radius: 11px !important;
-    overflow: hidden !important;
-  }
-
-  .card-img-container img {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: contain !important;
-    display: block !important;
-  }
-
-  /* Tekst dhe numra të dukshëm */
-  .card-title {
-    color: #ffffff !important;
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-    font-weight: 800 !important;
-    min-height: 31px !important;
-  }
-
-  .card-weight {
-    color: #cbd5e1 !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-  }
-
-  .card-status-row {
-    color: #e5e7eb !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-  }
-
-  .card-price {
-    color: #ffffff !important;
-    font-size: 14px !important;
-    font-weight: 900 !important;
-    margin-top: 5px !important;
-  }
-
-  .qty-controls {
-    display: grid !important;
-    grid-template-columns: 30px 1fr 30px !important;
-    align-items: center !important;
-    gap: 0 !important;
-    min-height: 32px !important;
-    margin-top: 8px !important;
-    padding: 2px !important;
-    background: #ffffff !important;
-    border: 1px solid #d9d4e8 !important;
-    border-radius: 9px !important;
-    overflow: hidden !important;
-  }
-
-  .qty-controls > span {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 0 !important;
-    height: 28px !important;
-    color: #111827 !important;
-    background: #f8f7ff !important;
-    font-size: 14px !important;
-    line-height: 1 !important;
-    font-weight: 900 !important;
-    opacity: 1 !important;
-  }
-
-  .btn-qty {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: #5b21b6 !important;
-    background: #ffffff !important;
-    border: 0 !important;
-    font-size: 18px !important;
-    line-height: 1 !important;
-    font-weight: 900 !important;
-    opacity: 1 !important;
-  }
-
-  .btn-qty:hover {
-    background: #ede9fe !important;
-    color: #7c3aed !important;
-  }
-
-  /* Titujt e dy kolonave të duken qartë */
-  .section-box .header-title h1 {
-    color: #fff !important;
-  }
-
-  .section-box .header-title p {
-    color: #e5e7eb !important;
-  }
-}
-
-/* Në desktop më të ngushtë ruajmë të njëjtën logjikë, pa prekur telefonin. */
-@media (min-width: 700px) and (max-width: 1150px) {
-  .dashboard-container {
-    grid-template-columns: minmax(0, 1.75fr) minmax(340px, 1fr) !important;
-    gap: 16px !important;
-  }
-
-  .card-img-container,
-  .card-img-container[style] {
-    height: 126px !important;
-    min-height: 126px !important;
-  }
-}
-</style>
-
 </head>
 <body class="cc-page cc-colors">
 
@@ -2368,31 +2184,8 @@ async function deleteItem(id) {
         const g50 = document.getElementById('yarn50Container');
         const mat = document.querySelector('.material-grid')?.closest('.section-box');
         const listBox = document.getElementById('listContainer');
-        const isDesktop = window.matchMedia('(min-width: 700px)').matches;
-
         document.querySelectorAll('[data-filter-btn]').forEach(btn => btn.classList.toggle('active', btn.dataset.filterBtn === type));
 
-        /* PC: leshi ndryshon majtas; materialet qëndrojnë gjithmonë hapur djathtas. */
-        if (isDesktop) {
-            if (mat) mat.style.display = 'block';
-
-            if (type === '50g') {
-                g500.style.display = 'none';
-                g50.style.display = 'block';
-                if (listBox) listBox.style.display = 'none';
-            } else if (type === 'list') {
-                g500.style.display = 'none';
-                g50.style.display = 'none';
-                if (listBox) listBox.style.display = 'block';
-            } else {
-                g500.style.display = 'block';
-                g50.style.display = 'none';
-                if (listBox) listBox.style.display = 'none';
-            }
-            return;
-        }
-
-        /* Telefon: sjellja ekzistuese mbetet siç ishte. */
         g500.style.display = type === '500g' ? 'block' : 'none';
         g50.style.display = type === '50g' ? 'block' : 'none';
         if (mat) mat.style.display = type === 'material' ? 'block' : '';
@@ -2518,26 +2311,225 @@ function closeImageViewer() {
 </script>
 
 
-<script id="cuffi-hide-host-refresh-desktop">
+<style id="pc-tamam-final">
+@media (min-width: 700px) {
+  body.cc-page.cc-colors {
+    padding: 14px !important;
+    min-height: 0 !important;
+  }
+
+  .dashboard-container {
+    display: grid !important;
+    grid-template-columns: minmax(0, 2.15fr) minmax(420px, .95fr) !important;
+    gap: 20px !important;
+    align-items: start !important;
+    max-width: 1750px !important;
+    margin: 0 auto !important;
+  }
+
+  .dashboard-container > .section-box {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    align-self: start !important;
+    overflow: visible !important;
+  }
+
+  /* Materialet gjithmonë hapur djathtas në PC */
+  .dashboard-container > .section-box:nth-child(2) {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Butoni Materiale nuk nevojitet në PC */
+  button[data-filter-btn="material"] {
+    display: none !important;
+  }
+
+  /* Leshi: 5 karta në rresht, por karta/foto më të mëdha */
+  #grid500g.cards-grid,
+  #grid50g.cards-grid {
+    grid-template-columns: repeat(5, minmax(150px, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  /* Materialet: 2 karta në rresht */
+  #gridMaterials.cards-grid,
+  .material-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .card {
+    padding: 10px !important;
+    border-radius: 15px !important;
+    background: #0d2854 !important;
+    color: #fff !important;
+    min-width: 0 !important;
+  }
+
+  /* FOTO MË TË MËDHA */
+  .card-img-container,
+  .card-img-container[style] {
+    width: 100% !important;
+    height: 170px !important;
+    min-height: 170px !important;
+    margin-bottom: 10px !important;
+    background: #fff !important;
+    border-radius: 11px !important;
+    overflow: hidden !important;
+  }
+
+  .card-img-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  .card-title {
+    color: #fff !important;
+    opacity: 1 !important;
+    font-size: 13px !important;
+    line-height: 1.18 !important;
+    font-weight: 800 !important;
+    min-height: 31px !important;
+  }
+
+  .card-weight {
+    color: #dbe4f0 !important;
+    opacity: 1 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+
+  .card-status-row {
+    color: #fff !important;
+    opacity: 1 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Numri "0 copë / 5 copë" në anën e djathtë */
+  .card-status-row > span:last-child,
+  .card-status-row span[style] {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    font-weight: 800 !important;
+  }
+
+  .card-price {
+    color: #fff !important;
+    opacity: 1 !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+
+  /* KONTROLLI - NUMRI + */
+  .qty-controls {
+    display: grid !important;
+    grid-template-columns: 34px minmax(48px, 1fr) 34px !important;
+    align-items: center !important;
+    min-height: 36px !important;
+    margin-top: 8px !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid #d8d3e8 !important;
+    border-radius: 9px !important;
+    overflow: hidden !important;
+  }
+
+  .qty-controls > span,
+  .qty-controls > span[style] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 34px !important;
+    margin: 0 !important;
+    padding: 0 4px !important;
+    background: #f6f4ff !important;
+    color: #111827 !important;
+    opacity: 1 !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    text-shadow: none !important;
+  }
+
+  .btn-qty,
+  .qty-controls .btn-qty {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #6d28d9 !important;
+    opacity: 1 !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    text-shadow: none !important;
+  }
+
+  .btn-qty:hover {
+    background: #ede9fe !important;
+    color: #7c3aed !important;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1250px) {
+  .dashboard-container {
+    grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1fr) !important;
+  }
+
+  .card-img-container,
+  .card-img-container[style] {
+    height: 145px !important;
+    min-height: 145px !important;
+  }
+}
+</style>
+
+
+<script id="pc-tamam-behavior">
 (function () {
-  function hideHostRefresh() {
+  function applyPcLayout() {
     if (!window.matchMedia('(min-width: 700px)').matches) return;
+
+    const materialBtn = document.querySelector('button[data-filter-btn="material"]');
+    if (materialBtn) materialBtn.style.setProperty('display', 'none', 'important');
+
+    const materialGrid = document.getElementById('gridMaterials');
+    const materialBox = materialGrid && materialGrid.closest('.section-box');
+    if (materialBox) {
+      materialBox.style.setProperty('display', 'block', 'important');
+      materialBox.style.setProperty('visibility', 'visible', 'important');
+    }
+
+    // Fshi "Rifresko" vetëm në PC nga faqja kryesore, nëse jemi në iframe.
     try {
-      if (window.parent === window) return;
-      const doc = window.parent.document;
-      const nodes = doc.querySelectorAll('button, a');
-      nodes.forEach(el => {
-        const label = String(el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-        if (label === 'rifresko' || label.endsWith(' rifresko')) {
-          el.style.display = 'none';
-        }
-      });
+      if (window.parent !== window) {
+        window.parent.document.querySelectorAll('button, a').forEach(el => {
+          const t = String(el.textContent || '').replace(/\s+/g,' ').trim().toLowerCase();
+          if (t === 'rifresko' || t.endsWith(' rifresko')) {
+            el.style.setProperty('display', 'none', 'important');
+          }
+        });
+      }
     } catch (_) {}
   }
 
-  window.addEventListener('load', hideHostRefresh);
-  setTimeout(hideHostRefresh, 500);
-  setTimeout(hideHostRefresh, 1500);
+  window.addEventListener('load', applyPcLayout);
+  window.addEventListener('resize', applyPcLayout);
+  setTimeout(applyPcLayout, 100);
+  setTimeout(applyPcLayout, 800);
 })();
 </script>
 
