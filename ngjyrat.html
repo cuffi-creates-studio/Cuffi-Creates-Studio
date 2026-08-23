@@ -722,6 +722,69 @@
 }
 </style>
 
+
+<style id="cuffi-catalog-compact-desktop">
+@media (min-width: 700px) {
+  body.cc-page.cc-colors {
+    min-height: auto !important;
+    padding-bottom: 18px !important;
+  }
+
+  .dashboard-container,
+  .dashboard-container > .section-box {
+    align-items: start !important;
+    align-self: start !important;
+  }
+
+  .dashboard-container > .section-box {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  #grid500g.cards-grid,
+  #grid50g.cards-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  #gridMaterials.cards-grid,
+  .material-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .card {
+    padding: 9px !important;
+    border-radius: 14px !important;
+  }
+
+  .card-img-container,
+  .card-img-container[style] {
+    height: 92px !important;
+    min-height: 92px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .card-title {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+
+  .card-weight,
+  .card-status-row {
+    font-size: 10px !important;
+  }
+
+  .card-price {
+    font-size: 12px !important;
+  }
+
+  .qty-controls {
+    margin-top: 6px !important;
+  }
+}
+</style>
+
 </head>
 <body class="cc-page cc-colors">
 
@@ -807,16 +870,719 @@
 <script>
     // DATA INITIALIZATION WITH LOCALFORAGE (INDEXEDDB)
     let inventory = [];
+    Object.defineProperty(window, 'inventory', {
+        configurable: true,
+        get: () => inventory,
+        set: (value) => { if (Array.isArray(value)) inventory = value; }
+    });
 
     const defaultItems = [
-        { id: 1, name: "E bardhë", category: "500g", qty: 32, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+White" },
-        { id: 2, name: "Rozë", category: "500g", qty: 24, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+Pink" },
-        { id: 3, name: "E verdhë", category: "500g", qty: 18, price: 9.00, img: "https://via.placeholder.com/1000?text=Cone+Yellow" },
-        { id: 4, name: "E bardhë", category: "50g", qty: 45, price: 2.20, img: "https://via.placeholder.com/1000?text=Ball+White" },
-        { id: 5, name: "Rozë", category: "50g", qty: 5, price: 2.20, img: "https://via.placeholder.com/1000?text=Ball+Pink" },
-        { id: 6, name: "Pistoletë Tufting 2cm", category: "material", qty: 1, price: 140.00, img: "https://via.placeholder.com/1000?text=Tufting+Gun" },
-        { id: 7, name: "Spray Glue Prime Fix", category: "material", qty: 2, price: 14.00, img: "https://via.placeholder.com/1000?text=Spray+Glue" }
-    ];
+        {
+                "id": 5001,
+                "catalogKey": "500g-01",
+                "name": "01 Pure White",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/01.jpg"
+        },
+        {
+                "id": 5002,
+                "catalogKey": "500g-02",
+                "name": "02 Ivory White",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/02.jpg"
+        },
+        {
+                "id": 5003,
+                "catalogKey": "500g-03",
+                "name": "03 Pastel Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/03.jpg"
+        },
+        {
+                "id": 5004,
+                "catalogKey": "500g-04",
+                "name": "04 Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/04.jpg"
+        },
+        {
+                "id": 5005,
+                "catalogKey": "500g-05",
+                "name": "05 Butter Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/05.jpg"
+        },
+        {
+                "id": 5006,
+                "catalogKey": "500g-06",
+                "name": "06 Golden Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/06.jpg"
+        },
+        {
+                "id": 5007,
+                "catalogKey": "500g-07",
+                "name": "07 Oker Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/07.jpg"
+        },
+        {
+                "id": 5008,
+                "catalogKey": "500g-08",
+                "name": "08 Orange",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/08.jpg"
+        },
+        {
+                "id": 5009,
+                "catalogKey": "500g-09",
+                "name": "09 Neon Orange",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/09.jpg"
+        },
+        {
+                "id": 5010,
+                "catalogKey": "500g-10",
+                "name": "10 Ginger Orange",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/10.jpg"
+        },
+        {
+                "id": 5011,
+                "catalogKey": "500g-11",
+                "name": "11 Pale Peach",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/11.jpg"
+        },
+        {
+                "id": 5012,
+                "catalogKey": "500g-12",
+                "name": "12 Light Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/12.jpg"
+        },
+        {
+                "id": 5013,
+                "catalogKey": "500g-13",
+                "name": "13 Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/13.jpg"
+        },
+        {
+                "id": 5014,
+                "catalogKey": "500g-14",
+                "name": "14 Hot Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/14.jpg"
+        },
+        {
+                "id": 5015,
+                "catalogKey": "500g-15",
+                "name": "15 Bright Magenta",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/15.jpg"
+        },
+        {
+                "id": 5016,
+                "catalogKey": "500g-16",
+                "name": "16 Magenta",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/16.jpg"
+        },
+        {
+                "id": 5017,
+                "catalogKey": "500g-17",
+                "name": "17 Deep Magenta",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/17.jpg"
+        },
+        {
+                "id": 5018,
+                "catalogKey": "500g-18",
+                "name": "18 Deep Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/18.jpg"
+        },
+        {
+                "id": 5019,
+                "catalogKey": "500g-19",
+                "name": "19 Orchid Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/19.jpg"
+        },
+        {
+                "id": 5020,
+                "catalogKey": "500g-20",
+                "name": "20 Highlighter Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/20.jpg"
+        },
+        {
+                "id": 5021,
+                "catalogKey": "500g-21",
+                "name": "21 Fuchsia Pink",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/21.jpg"
+        },
+        {
+                "id": 5022,
+                "catalogKey": "500g-22",
+                "name": "22 Bright Red",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/22.jpg"
+        },
+        {
+                "id": 5023,
+                "catalogKey": "500g-23",
+                "name": "23 Red",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/23.jpg"
+        },
+        {
+                "id": 5024,
+                "catalogKey": "500g-24",
+                "name": "24 Cherry Red",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/24.jpg"
+        },
+        {
+                "id": 5025,
+                "catalogKey": "500g-25",
+                "name": "25 Bordeaux",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/25.jpg"
+        },
+        {
+                "id": 5026,
+                "catalogKey": "500g-26",
+                "name": "26 Lavender Purple",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/26.jpg"
+        },
+        {
+                "id": 5027,
+                "catalogKey": "500g-27",
+                "name": "27 Deep Purple",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/27.jpg"
+        },
+        {
+                "id": 5028,
+                "catalogKey": "500g-28",
+                "name": "28 Indigo Purple",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/28.jpg"
+        },
+        {
+                "id": 5029,
+                "catalogKey": "500g-29",
+                "name": "29 Aubergine",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/29.jpg"
+        },
+        {
+                "id": 5030,
+                "catalogKey": "500g-30",
+                "name": "30 Lilac",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/30.jpg"
+        },
+        {
+                "id": 5031,
+                "catalogKey": "500g-31",
+                "name": "31 Cornflower Blue",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/31.jpg"
+        },
+        {
+                "id": 5032,
+                "catalogKey": "500g-32",
+                "name": "32 Blue Purple",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/32.jpg"
+        },
+        {
+                "id": 5033,
+                "catalogKey": "500g-33",
+                "name": "33 Royal Blue",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/33.jpg"
+        },
+        {
+                "id": 5034,
+                "catalogKey": "500g-34",
+                "name": "34 Light Olive",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/34.jpg"
+        },
+        {
+                "id": 5035,
+                "catalogKey": "500g-35",
+                "name": "35 Olive",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/35.jpg"
+        },
+        {
+                "id": 5036,
+                "catalogKey": "500g-36",
+                "name": "36 Bronze Brown",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/36.jpg"
+        },
+        {
+                "id": 5037,
+                "catalogKey": "500g-37",
+                "name": "37 Dark Brown",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/37.jpg"
+        },
+        {
+                "id": 5038,
+                "catalogKey": "500g-38",
+                "name": "38 Highlighter Yellow",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/38.jpg"
+        },
+        {
+                "id": 5039,
+                "catalogKey": "500g-39",
+                "name": "39 Highlighter Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/39.jpg"
+        },
+        {
+                "id": 5040,
+                "catalogKey": "500g-40",
+                "name": "40 Apple Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/40.jpg"
+        },
+        {
+                "id": 5041,
+                "catalogKey": "500g-41",
+                "name": "41 SAP Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/41.jpg"
+        },
+        {
+                "id": 5042,
+                "catalogKey": "500g-42",
+                "name": "42 Turqouise",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/42.jpg"
+        },
+        {
+                "id": 5043,
+                "catalogKey": "500g-43",
+                "name": "43 Teal",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/43.jpg"
+        },
+        {
+                "id": 5044,
+                "catalogKey": "500g-44",
+                "name": "44 Dark Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/44.jpg"
+        },
+        {
+                "id": 5045,
+                "catalogKey": "500g-45",
+                "name": "45 Light Mint",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/45.jpg"
+        },
+        {
+                "id": 5046,
+                "catalogKey": "500g-46",
+                "name": "46 Light Turqouise",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/46.jpg"
+        },
+        {
+                "id": 5047,
+                "catalogKey": "500g-47",
+                "name": "47 Sky Blue Light",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/47.jpg"
+        },
+        {
+                "id": 5048,
+                "catalogKey": "500g-48",
+                "name": "48 Skyblue",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/48.jpg"
+        },
+        {
+                "id": 5049,
+                "catalogKey": "500g-49",
+                "name": "49 Ocean Blue",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/49.jpg"
+        },
+        {
+                "id": 5050,
+                "catalogKey": "500g-50",
+                "name": "50 Azure Blue",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/50.jpg"
+        },
+        {
+                "id": 5051,
+                "catalogKey": "500g-51",
+                "name": "51 Poison Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/51.jpg"
+        },
+        {
+                "id": 5052,
+                "catalogKey": "500g-52",
+                "name": "52 Dark Olive",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/52.jpg"
+        },
+        {
+                "id": 5053,
+                "catalogKey": "500g-53",
+                "name": "53 Dark forest Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/53.jpg"
+        },
+        {
+                "id": 5054,
+                "catalogKey": "500g-54",
+                "name": "54 Deep Brown",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/54.jpg"
+        },
+        {
+                "id": 5055,
+                "catalogKey": "500g-55",
+                "name": "55 Dusty Pine Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/55.jpg"
+        },
+        {
+                "id": 5056,
+                "catalogKey": "500g-56",
+                "name": "56 Dark Pine Green",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/56.jpg"
+        },
+        {
+                "id": 5057,
+                "catalogKey": "500g-57",
+                "name": "57 Light Grey",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/57.jpg"
+        },
+        {
+                "id": 5058,
+                "catalogKey": "500g-58",
+                "name": "58 Medium Grey",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/58.jpg"
+        },
+        {
+                "id": 5059,
+                "catalogKey": "500g-59",
+                "name": "59 Dark Grey",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/59.jpg"
+        },
+        {
+                "id": 5060,
+                "catalogKey": "500g-60",
+                "name": "60 Black",
+                "category": "500g",
+                "qty": 0,
+                "price": 10.0,
+                "img": "assets/500g/60.jpg"
+        },
+        {
+                "id": 6001,
+                "catalogKey": "50g-white",
+                "name": "E bardhë",
+                "category": "50g",
+                "qty": 45,
+                "price": 2.2,
+                "img": "assets/50g/topa-50g.jpg"
+        },
+        {
+                "id": 6002,
+                "catalogKey": "50g-pink",
+                "name": "Rozë",
+                "category": "50g",
+                "qty": 5,
+                "price": 2.2,
+                "img": "assets/50g/topa-50g.jpg"
+        },
+        {
+                "id": 7001,
+                "catalogKey": "material-7001",
+                "name": "Spray Glue Prime Fix",
+                "category": "material",
+                "qty": 0,
+                "price": 14.0,
+                "img": "assets/materials/spray-glue.jpg"
+        },
+        {
+                "id": 7002,
+                "catalogKey": "material-7002",
+                "name": "Ngjitës për qilim / PVC",
+                "category": "material",
+                "qty": 0,
+                "price": 0.0,
+                "img": "assets/materials/carpet-glue.jpg"
+        },
+        {
+                "id": 7003,
+                "catalogKey": "material-7003",
+                "name": "Makinë prerëse / rregulluese tufting",
+                "category": "material",
+                "qty": 0,
+                "price": 0.0,
+                "img": "assets/materials/trimmer.jpg"
+        },
+        {
+                "id": 7004,
+                "catalogKey": "material-7004",
+                "name": "Gërshërë për tufting",
+                "category": "material",
+                "qty": 0,
+                "price": 0.0,
+                "img": "assets/materials/scissors.jpg"
+        },
+        {
+                "id": 7005,
+                "catalogKey": "material-7005",
+                "name": "Pëlhurë bazë për tufting",
+                "category": "material",
+                "qty": 0,
+                "price": 0.0,
+                "img": "assets/materials/tufting-cloth.jpg"
+        },
+        {
+                "id": 7006,
+                "catalogKey": "material-7006",
+                "name": "Pëlhurë antirrëshqitëse / backing",
+                "category": "material",
+                "qty": 0,
+                "price": 0.0,
+                "img": "assets/materials/anti-slip.jpg"
+        },
+        {
+                "id": 7007,
+                "catalogKey": "material-7007",
+                "name": "Pistoletë tufting 4cm",
+                "category": "material",
+                "qty": 0,
+                "price": 180.0,
+                "img": "assets/materials/tufting-gun-4cm.jpg"
+        },
+        {
+                "id": 7008,
+                "catalogKey": "material-7008",
+                "name": "Pistoletë tufting 2cm",
+                "category": "material",
+                "qty": 0,
+                "price": 140.0,
+                "img": "assets/materials/tufting-gun-2cm.jpg"
+        }
+];
+
+
+    function normalizeCatalogName(value) {
+        return String(value || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
+    }
+
+    function mergeCatalogWithSaved(savedItems) {
+        const saved = Array.isArray(savedItems) ? savedItems : [];
+        const used = new Set();
+
+        const legacyMap = {
+            "500g|e bardhe": "500g-01",
+            "500g|roze": "500g-13",
+            "500g|e verdhe": "500g-04",
+            "50g|e bardhe": "50g-white",
+            "50g|roze": "50g-pink",
+            "material|spray glue prime fix": "material-7001",
+            "material|pistolete tufting 2cm": "material-7008",
+            "material|pistolete tufting 4cm": "material-7007"
+        };
+
+        const merged = defaultItems.map(base => {
+            let matchIndex = saved.findIndex((item, idx) =>
+                !used.has(idx) && item && item.catalogKey === base.catalogKey
+            );
+
+            if (matchIndex < 0) {
+                matchIndex = saved.findIndex((item, idx) => {
+                    if (used.has(idx) || !item) return false;
+                    const legacyKey = String(item.category || "") + "|" + normalizeCatalogName(item.name);
+                    return legacyMap[legacyKey] === base.catalogKey;
+                });
+            }
+
+            if (matchIndex < 0) {
+                matchIndex = saved.findIndex((item, idx) =>
+                    !used.has(idx) &&
+                    item &&
+                    item.category === base.category &&
+                    normalizeCatalogName(item.name) === normalizeCatalogName(base.name)
+                );
+            }
+
+            if (matchIndex >= 0) {
+                used.add(matchIndex);
+                const old = saved[matchIndex];
+                const oldImg = String(old.img || "");
+                const hasRealCustomImage =
+                    oldImg &&
+                    !oldImg.includes("via.placeholder.com") &&
+                    !oldImg.startsWith("assets/");
+
+                return {
+                    ...base,
+                    qty: Number.isFinite(Number(old.qty)) ? Number(old.qty) : base.qty,
+                    price: Number.isFinite(Number(old.price)) ? Number(old.price) : base.price,
+                    img: hasRealCustomImage ? old.img : base.img
+                };
+            }
+
+            return { ...base };
+        });
+
+        // Artikujt personalë të përdoruesit nuk fshihen.
+        saved.forEach((item, idx) => {
+            if (!used.has(idx) && item) merged.push(item);
+        });
+
+        return merged;
+    }
 
    // ======================================================
 // LOAD DATA FROM INDEXEDDB
@@ -834,17 +1600,22 @@ async function loadData() {
             Array.isArray(savedData) &&
             savedData.length > 0
         ) {
-            inventory = savedData;
+            inventory = mergeCatalogWithSaved(savedData);
+
+            await localforage.setItem(
+                'tufting_studio_inventory',
+                inventory
+            );
 
             console.log(
-                "Inventari u ngarkua:",
+                "Inventari u ngarkua dhe katalogu u bashkua:",
                 inventory.length,
                 "produkte"
             );
 
         } else {
 
-            inventory = defaultItems;
+            inventory = defaultItems.map(item => ({ ...item }));
 
             await saveData();
 
@@ -860,7 +1631,7 @@ async function loadData() {
             err
         );
 
-        inventory = defaultItems;
+        inventory = defaultItems.map(item => ({ ...item }));
     }
 
     renderApp();
