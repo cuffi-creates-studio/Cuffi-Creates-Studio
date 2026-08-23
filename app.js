@@ -110,7 +110,6 @@ function bindNavigation() {
     if (view) setView(view.dataset.view);
   });
   $('#resetView').onclick = logout;
-  $('#mpLogout') && ($('#mpLogout').onclick = logout);
   $('#backDashboard').onclick = () => setView('dashboard');
   $('#jumpCalendar').onclick = () => {
     setView('dashboard');
@@ -696,26 +695,49 @@ async function initAuth() {
     hideLogin();
   });
 
-  $('#forgotPassword').onclick = async () => {
-    const email = emailInput.value.trim();
+  $('#forgotPassword').onclick = () => {
+    const dialog = $('#forgotPasswordDialog');
+    const emailField = $('#forgotPasswordEmail');
+    const currentEmail = $('#loginUsername')?.value.trim() || '';
+    $('#forgotPasswordError').textContent = '';
+    emailField.value = currentEmail;
+    dialog.showModal();
+    setTimeout(() => emailField.focus(), 50);
+  };
+
+  $('#forgotPasswordForm').addEventListener('submit', async event => {
+    event.preventDefault();
+
+    const email = $('#forgotPasswordEmail').value.trim();
+    const errorBox = $('#forgotPasswordError');
+    const sendButton = $('#sendResetEmail');
+
     if (!email) {
-      errorBox.textContent = 'Shkruaj email-in tënd më sipër dhe provo përsëri.';
-      emailInput.focus();
+      errorBox.textContent = 'Shkruaj email-in.';
       return;
     }
 
     errorBox.textContent = 'Po dërgohet email-i...';
+    sendButton.disabled = true;
+
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
 
+    sendButton.disabled = false;
+
     if (error) {
-      errorBox.textContent = `Email-i nuk u dërgua: ${error.message}`;
+      if ((error.message || '').toLowerCase().includes('security purposes')) {
+        errorBox.textContent = 'Prit pak sekonda dhe provo përsëri.';
+      } else {
+        errorBox.textContent = `Email-i nuk u dërgua: ${error.message}`;
+      }
       return;
     }
 
     errorBox.textContent = '';
-    showToast('Email-i u dërgua', 'Kontrollo email-in dhe kliko lidhjen për të vendosur fjalëkalimin e ri.');
-  };
+    $('#forgotPasswordDialog').close();
+    showToast('Email-i u dërgua', 'Kontrollo Inbox dhe Spam/Junk për linkun e ndryshimit të fjalëkalimit.');
+  });
 
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) hideLogin();

@@ -4,13 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cuffi Creates Studio</title>
-  <meta name="theme-color" content="#061127">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Cuffi Creates Studio">
-  <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="./images/pwa-192.png">
-  <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
@@ -69,7 +62,7 @@
           <p>Menaxho projektet, materialet, shitjet, faturat dhe terminet nga një vend i vetëm.</p>
           <button class="mp-primary" id="mpAddAppointment"><i class="fa-regular fa-calendar-plus"></i><span>Shto një termin</span></button>
         </div>
-        <div class="mp-hero-art"><img src="./images/studio-hero.png" alt="Cuffi Creates Studio"></div>
+        <div class="mp-hero-art"><img src="assets/studio-hero.png" alt="Cuffi Creates Studio"></div>
       </section>
 
       <section class="mp-time-card">
@@ -316,6 +309,16 @@
       </section>
     </main>
   </div>
+
+  <dialog id="forgotPasswordDialog" class="modal">
+    <form method="dialog" id="forgotPasswordForm">
+      <div class="modal-head"><h3>Harrove fjalëkalimin?</h3><button value="cancel" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="modal-info">Shkruaj email-in e llogarisë dhe do të të dërgojmë linkun për fjalëkalim të ri.</p>
+      <label>Email<input id="forgotPasswordEmail" type="email" autocomplete="email" required placeholder="Shkruaj email-in"></label>
+      <div id="forgotPasswordError" class="login-error" role="alert"></div>
+      <div class="modal-actions"><button value="cancel" class="secondary-btn">Anulo</button><button value="default" class="primary-btn" id="sendResetEmail">Dërgo email</button></div>
+    </form>
+  </dialog>
 
   <dialog id="resetPasswordDialog" class="modal">
     <form method="dialog" id="resetPasswordForm">
