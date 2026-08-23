@@ -325,48 +325,13 @@
         }
     
         /* =========================================================
-           VETËM PAMJA / CSS
-           - Desktop: pamja me dy kolona si versioni i vjetër
-           - Telefon: një kolonë si screenshot-i i telefonit
-           - JavaScript, të dhënat dhe ruajtja NUK preken
+           TELEFONI - SI NË FOTO:
+           - 2 karta në rresht
+           - foto brenda kartës
+           - layout i ngjashëm me screenshot-in
+           - vetëm butonat +/- më të bukur
+           Desktopi nuk preket.
            ========================================================= */
-
-        @media (min-width: 769px) {
-            body {
-                background: linear-gradient(135deg, #ef1748 0%, #b52e59 55%, #ca467f 100%) !important;
-                padding: 24px !important;
-                min-height: 100vh !important;
-            }
-
-            .dashboard-container {
-                display: grid !important;
-                grid-template-columns: 2fr 1fr !important;
-                gap: 24px !important;
-                max-width: 1600px !important;
-                margin: 0 auto !important;
-                align-items: start !important;
-            }
-
-            .section-box {
-                background: rgba(45, 35, 48, 0.75) !important;
-                backdrop-filter: blur(12px) !important;
-                -webkit-backdrop-filter: blur(12px) !important;
-                border-radius: 24px !important;
-                padding: 24px !important;
-                border: 1px solid rgba(255,255,255,.08) !important;
-                box-shadow: 0 15px 35px rgba(0,0,0,.40) !important;
-            }
-
-            .cards-grid {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
-                gap: 14px !important;
-            }
-
-            .material-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-        }
-
         @media (max-width: 768px) {
             html, body {
                 width: 100%;
@@ -375,197 +340,213 @@
             }
 
             body {
-                background:
-                    radial-gradient(circle at 10% 0%, rgba(124,58,237,.38), transparent 34%),
-                    radial-gradient(circle at 92% 22%, rgba(236,72,153,.18), transparent 34%),
-                    #090b18 !important;
-                padding: 14px !important;
+                background: #091a44 !important;
+                padding: 10px !important;
                 min-height: 100vh !important;
             }
 
             .dashboard-container {
                 display: flex !important;
                 flex-direction: column !important;
-                width: 100% !important;
+                gap: 12px !important;
                 max-width: 100% !important;
-                gap: 18px !important;
                 margin: 0 !important;
             }
 
             .section-box {
-                width: 100% !important;
-                min-width: 0 !important;
-                background: rgba(12, 14, 33, .82) !important;
-                border: 1px solid rgba(139, 92, 246, .24) !important;
-                border-radius: 22px !important;
-                padding: 18px !important;
-                box-shadow: 0 14px 40px rgba(0,0,0,.32) !important;
-                backdrop-filter: blur(12px) !important;
-                -webkit-backdrop-filter: blur(12px) !important;
+                background: #173b73 !important;
+                border: 1px solid rgba(130, 160, 230, 0.25) !important;
+                border-radius: 18px !important;
+                padding: 14px !important;
+                box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03) !important;
             }
 
-            .header-title h1,
-            h1 {
-                font-size: 30px !important;
-                line-height: 1.05 !important;
-                margin-bottom: 6px !important;
+            .header-title h1, h1 {
+                font-size: 22px !important;
+                line-height: 1.1 !important;
+                margin-bottom: 4px !important;
+                text-shadow: none !important;
             }
 
-            .header-title p,
-            p {
-                font-size: 13px !important;
-                line-height: 1.4 !important;
-                margin-bottom: 15px !important;
+            .header-title p, p {
+                font-size: 12px !important;
+                color: #a8b7d9 !important;
+                margin-bottom: 12px !important;
             }
 
             .top-controls {
-                width: 100% !important;
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-columns: repeat(4, 1fr) !important;
                 gap: 8px !important;
                 margin-bottom: 12px !important;
             }
 
             .btn-filter {
-                min-height: 40px !important;
-                padding: 8px 8px !important;
-                border-radius: 13px !important;
-                border: 1px solid rgba(255,255,255,.10) !important;
-                background: rgba(255,255,255,.07) !important;
-                color: #fff !important;
-                font-size: 12px !important;
-                font-weight: 750 !important;
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important;
+                min-height: 38px !important;
+                padding: 8px 6px !important;
+                border-radius: 12px !important;
+                border: 1px solid rgba(147, 197, 253, 0.25) !important;
+                background: #123365 !important;
+                color: #ffffff !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                box-shadow: none !important;
             }
 
             .btn-filter.active {
-                background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
-                border-color: rgba(196,181,253,.55) !important;
-                box-shadow: 0 8px 22px rgba(124,58,237,.38), inset 0 1px 0 rgba(255,255,255,.20) !important;
+                background: linear-gradient(135deg, #d946ef, #7c3aed) !important;
+                border-color: rgba(255,255,255,0.18) !important;
+                box-shadow: 0 8px 20px rgba(167, 59, 255, 0.35) !important;
             }
 
             .search-bar-row {
-                width: 100% !important;
                 display: grid !important;
                 grid-template-columns: minmax(0, 1fr) auto !important;
-                gap: 9px !important;
-                margin-bottom: 18px !important;
+                gap: 10px !important;
+                margin-bottom: 14px !important;
             }
 
             .search-input {
-                width: 100% !important;
                 min-width: 0 !important;
-                height: 44px !important;
+                height: 42px !important;
                 padding: 0 14px !important;
                 border-radius: 14px !important;
-                border: 1px solid rgba(167,139,250,.22) !important;
-                background: rgba(255,255,255,.055) !important;
-                box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important;
+                background: #0f2b5b !important;
+                border: 1px solid rgba(148, 163, 184, 0.25) !important;
+                color: #fff !important;
             }
 
             .btn-action {
-                min-height: 44px !important;
+                min-height: 42px !important;
                 padding: 10px 14px !important;
                 border-radius: 14px !important;
-                border: 1px solid rgba(196,181,253,.35) !important;
-                background: linear-gradient(135deg, #9b5cff 0%, #6d4cff 52%, #4378ff 100%) !important;
-                box-shadow: 0 9px 24px rgba(109,40,217,.35), inset 0 1px 0 rgba(255,255,255,.22) !important;
+                background: linear-gradient(135deg, #d946ef, #8b5cf6) !important;
+                color: white !important;
                 font-size: 12px !important;
                 font-weight: 800 !important;
                 white-space: nowrap !important;
+                box-shadow: 0 8px 18px rgba(167, 59, 255, 0.3) !important;
             }
 
             .category-title {
-                font-size: 17px !important;
-                margin: 14px 0 12px !important;
+                font-size: 14px !important;
+                margin: 10px 0 12px !important;
+                color: #ffffff !important;
+                text-shadow: none !important;
             }
 
-            .cards-grid,
-            .material-grid {
+            .cards-grid {
                 display: grid !important;
-                grid-template-columns: 1fr !important;
-                gap: 15px !important;
-                width: 100% !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 12px !important;
+                align-items: stretch !important;
+            }
+
+            .material-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
             .card {
-                width: 100% !important;
-                min-width: 0 !important;
-                background: #fff !important;
-                color: #1f2937 !important;
+                background: #15366a !important;
+                color: white !important;
                 border-radius: 18px !important;
-                padding: 14px !important;
-                box-shadow: 0 10px 28px rgba(0,0,0,.20) !important;
-            }
-
-            .card:hover {
-                transform: none !important;
-            }
-
-            .card-img-container,
-            .card-img-container[style] {
-                height: 190px !important;
-                border-radius: 13px !important;
-                margin-bottom: 11px !important;
-                background: #f7f8fb !important;
+                padding: 10px !important;
+                border: 1px solid rgba(148, 163, 184, 0.25) !important;
+                box-shadow: none !important;
+                text-align: left !important;
             }
 
             .card-title {
-                font-size: 15px !important;
-                line-height: 1.25 !important;
+                font-size: 11px !important;
+                color: #ffffff !important;
                 margin-bottom: 4px !important;
             }
 
             .card-weight {
-                font-size: 12px !important;
-                margin-bottom: 8px !important;
+                font-size: 10px !important;
+                color: #d8e2ff !important;
+                margin-bottom: 6px !important;
             }
 
             .card-status-row {
-                font-size: 12px !important;
-                margin-bottom: 9px !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                font-size: 10px !important;
+                margin-bottom: 6px !important;
             }
 
             .card-price {
-                font-size: 15px !important;
+                font-size: 13px !important;
+                color: #22e46d !important;
+                font-weight: 800 !important;
+                text-align: left !important;
+            }
+
+            .card-img-container,
+            .card-img-container[style] {
+                position: relative !important;
+                height: 118px !important;
+                background: #ffffff !important;
+                border-radius: 14px !important;
+                margin-bottom: 10px !important;
+                overflow: hidden !important;
+            }
+
+            .card-img-container img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
             }
 
             .qty-controls {
-                margin-top: 10px !important;
-                padding: 4px !important;
-                border-radius: 11px !important;
-                background: #f1edfb !important;
+                margin-top: 8px !important;
+                padding: 3px !important;
+                border-radius: 10px !important;
+                background: #0f2b5b !important;
+                border: 1px solid rgba(148, 163, 184, 0.25) !important;
+                display: grid !important;
+                grid-template-columns: 30px 1fr 30px !important;
+                align-items: center !important;
+                gap: 4px !important;
+            }
+
+            .qty-controls span {
+                text-align: center !important;
+                color: #ffffff !important;
+                font-size: 12px !important;
+                font-weight: 800 !important;
             }
 
             .btn-qty {
-                width: 32px !important;
-                height: 32px !important;
-                border-radius: 9px !important;
-                border: 1px solid #ece8f5 !important;
-                background: #fff !important;
-                box-shadow: 0 2px 6px rgba(15,23,42,.08) !important;
-                font-size: 17px !important;
+                width: 26px !important;
+                height: 26px !important;
+                border-radius: 8px !important;
+                border: 1px solid rgba(255,255,255,0.08) !important;
+                background: linear-gradient(135deg, #1a1f58, #2c2b7a) !important;
+                color: #f5f7ff !important;
+                font-size: 15px !important;
+                font-weight: 800 !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
             }
+
+            .btn-qty:hover,
+            .btn-qty:active {
+                background: linear-gradient(135deg, #8b5cf6, #d946ef) !important;
+            }
+
+            .status-badge.in-stock { color: #22c55e !important; }
+            .status-badge.low-stock { color: #f59e0b !important; }
 
             .alert-box {
-                margin-top: 16px !important;
-                border-radius: 15px !important;
-            }
-
-            .modal {
-                padding: 14px !important;
+                margin-top: 14px !important;
+                border-radius: 14px !important;
             }
 
             .modal-content {
-                width: min(100%, 390px) !important;
-                max-height: 88vh !important;
+                width: min(100%, 360px) !important;
+                max-height: 86vh !important;
                 overflow-y: auto !important;
-                border-radius: 18px !important;
-            }
-
-            #imageViewerModal img {
-                max-width: 94% !important;
-                max-height: 84% !important;
             }
         }
 
