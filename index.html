@@ -18,20 +18,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="mobile-premium.css" />
   <link rel="stylesheet" href="cc-internal-views.css">
-
-<style id="hide-only-bottom-ghost-buttons">
-/* Heq vetëm butonat fantazmë që mund të dalin jashtë navigimit.
-   Butonat normalë në sidebar / dashboard nuk preken. */
-body > button[data-view="gallery"],
-body > button[data-view="backup"],
-body > button[data-view="settings"],
-.app-shell > button[data-view="gallery"],
-.app-shell > button[data-view="backup"],
-.app-shell > button[data-view="settings"] {
-  display: none !important;
-}
-</style>
-
 </head>
 <body>
 
@@ -398,5 +384,49 @@ body > button[data-view="settings"],
     })();
   </script>
   
+
+<style id="fix-only-three-bottom-overflow">
+@media (min-width: 700px) {
+  .sidebar {
+    overflow: hidden !important;
+  }
+
+  .side-nav {
+    overflow: hidden !important;
+  }
+}
+</style>
+
+<script id="fix-only-three-bottom-overflow-js">
+(function () {
+  const targets = new Set(["gallery", "backup", "settings"]);
+
+  function fixOnlyBottomGhosts() {
+    if (!window.matchMedia("(min-width: 700px)").matches) return;
+
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+
+    const sideRect = sidebar.getBoundingClientRect();
+
+    document.querySelectorAll(".side-nav .nav-item[data-view]").forEach(btn => {
+      if (!targets.has(btn.dataset.view)) return;
+
+      const r = btn.getBoundingClientRect();
+
+      /* Vetëm nëse ai buton ka dalë fizikisht jashtë sidebar-it poshtë.
+         Kur është normal brenda sidebar-it, nuk preket. */
+      if (r.top >= sideRect.bottom || r.bottom > sideRect.bottom + 2) {
+        btn.style.setProperty("display", "none", "important");
+      }
+    });
+  }
+
+  window.addEventListener("load", fixOnlyBottomGhosts);
+  window.addEventListener("resize", fixOnlyBottomGhosts);
+  setTimeout(fixOnlyBottomGhosts, 300);
+})();
+</script>
+
 </body>
 </html>
