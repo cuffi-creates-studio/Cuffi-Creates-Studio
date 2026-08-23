@@ -135,14 +135,6 @@ function openApp(key) {
   const app = APPS[key];
   if (!app) return;
 
-  // Në telefon Inventari i Ngjyrave hapet si faqe e plotë. Kjo shmang
-  // problemet e iframe/mobile shell dhe e bën të përdorshëm edhe nga PWA.
-  const isPhone = window.matchMedia('(max-width: 900px)').matches;
-  if (key === 'ngjyrat' && isPhone) {
-    window.location.assign(app.src);
-    return;
-  }
-
   state.currentApp = key;
   $('#activeAppName').textContent = app.name;
   $('#topTitle').textContent = app.name;
