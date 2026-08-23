@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tufting Studio Manager</title>
+<style>
+:root {
+--bg-color: #fc9700;
+--card-bg: #e6e6e0;
+--border-color: #c8c8c0;
+--text-dark: #1f2937;
+--primary-blue: #1d4ed8;
+--btn-green: #10b981;
+--btn-red: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-dark); padding: 30px 15px; }
+
+.container { max-width: 1000px; margin: auto; }
+
+.header-title {
+text-align: center;
+font-size: 28px;
+font-weight: 800;
+color: #1e3a8a;
+margin-bottom: 25px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+}
+
+/* CARD CONTAINERS (Forma dhe Tabela me ngjyrë të njëjtë) */
+.card-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 25px;
+margin-bottom: 25px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card-title {
+font-size: 20px;
+font-weight: 700;
+margin-bottom: 18px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+/* GRID FORM */
+.form-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 15px;
+margin-bottom: 15px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full-width { grid-column: span 3; }
+
+label { font-size: 13px; font-weight: 700; color: #374151; }
+
+input, select, textarea {
+width: 100%;
+padding: 10px 12px;
+border-radius: 8px;
+border: 1px solid #d1d5db;
+background: #f9fafb;
+font-size: 14px;
+outline: none;
+transition: 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+border-color: var(--primary-blue);
+background: #ffffff;
+box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+textarea { resize: vertical; min-height: 70px; }
+
+.btn-submit {
+width: 100%;
+background: var(--primary-blue);
+color: white;
+border: none;
+padding: 12px;
+border-radius: 8px;
+font-size: 15px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.2s;
+margin-top: 10px;
+}
+
+.btn-submit:hover { background: #1e40af; }
+
+/* TABLE DESIGN */
+.table-responsive { overflow-x: auto; }
+
+table {
+width: 100%;
+border-collapse: collapse;
+text-align: left;
+font-size: 14px;
+}
+
+th {
+border-bottom: 2px solid var(--border-color);
+padding: 12px 8px;
+font-weight: 700;
+}
+
+td {
+border-bottom: 1px solid var(--border-color);
+padding: 12px 8px;
+vertical-align: top;
+}
+
+.img-preview {
+width: 60px;
+height: 60px;
+object-fit: cover;
+border-radius: 8px;
+border: 1px solid #ccc;
+background: #fff;
+}
+
+.no-img {
+font-size: 12px;
+color: #6b7280;
+font-style: italic;
+}
+
+/* BUTTONS TABLE */
+.action-btns { display: flex; flex-direction: column; gap: 5px; }
+
+.btn-action {
+border: none;
+padding: 6px 12px;
+border-radius: 6px;
+color: white;
+font-weight: bold;
+font-size: 12px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 4px;
+}
+
+.btn-edit { background: var(--btn-green); }
+.btn-delete { background: var(--btn-red); }
+
+@media (max-width: 768px) {
+.form-grid { grid-template-columns: 1fr; }
+.form-group.full-width { grid-column: span 1; }
+}
+</style>
+  <link rel="stylesheet" href="../cc-exact-pages.css">
+</head>
+<body class="cc-page cc-manager">
+
+<div class="container">
+
+<div class="header-title">
+🧵 Tufting Studio Manager
+</div>
+
+<!-- FORM CARD -->
+<div class="card-box">
+<form id="projectForm">
+<input type="hidden" id="editIndex" value="-1">
+
+<div class="form-grid">
+<div class="form-group">
+<label for="pName">Emri i Projektit</label>
+<input type="text" id="pName" placeholder="p.sh. Tase Kaffe" required>
+</div>
+
+<div class="form-group">
+<label for="pYarnType">Lloji i Fijs</label>
+<select id="pYarnType">
+<option value="100% Akrilik">100% Akrilik</option>
+<option value="100% Lesh (Wolle)">100% Lesh (Wolle)</option>
+<option value="Përzierje (Mischgarne)">Përzierje (Mischgarne)</option>
+<option value="Tjetër">Tjetër</option>
+</select>
+</div>
+
+<div class="form-group">
+<label for="pFoto">Foto e Projektit (Opsionale)</label>
+<input type="file" id="pFoto" accept="image/*">
+</div>
+
+<div class="form-group full-width">
+<label for="pDetails">Ngjyrat, Kodet dhe Marka/Dyqani (Detaje)</label>
+<textarea id="pDetails" placeholder="Kuqe = 008 = Basic Soft&#10;Kafe = 44 = Superpreis"></textarea>
+</div>
+
+<div class="form-group">
+<label for="pWeight">Sasia e Fijes (gram)</label>
+<input type="text" id="pWeight" placeholder="p.sh. 500">
+</div>
+
+<div class="form-group">
+<label for="pCost">Kostoja e Materialit (€)</label>
+<input type="text" id="pCost" placeholder="p.sh. 15.50">
+</div>
+
+<div class="form-group">
+<label for="pPrice">Çmimi i Shitjes (€)</label>
+<input type="text" id="pPrice" placeholder="p.sh. 70.00">
+</div>
+</div>
+
+<button type="submit" class="btn-submit" id="btnSubmitText">+ Rregjistro Projektin</button>
+</form>
+</div>
+
+<!-- CATALOGUE / TABLE CARD -->
+<div class="card-box">
+<div class="card-title">📋 Katalogu i Projekteve</div>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th>Foto</th>
+<th>Projekti</th>
+<th>Fija</th>
+<th>Detajet e Fijeve</th>
+<th>Pesha</th>
+<th>Kosto</th>
+<th>Çmimi</th>
+<th>Veprime</th>
+</tr>
+</thead>
+<tbody id="projectsTableBody">
+<!-- Projektet do të ngarkohen këtu dinamikisht -->
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<script>
+let projects = JSON.parse(localStorage.getItem('myTuftingProjects')) || [];
+
+// Funksion i posaçëm për të kompresuar dhe zvogëluar foton që të ruhet pa asnjë problem
+function compressAndConvertImage(file, callback) {
+if (!file) {
+callback("");
+return;
+}
+
+const reader = new FileReader();
+reader.readAsDataURL(file);
+reader.onload = function (e) {
+const img = new Image();
+img.src = e.target.result;
+img.onload = function () {
+const canvas = document.createElement('canvas');
+const MAX_WIDTH = 500; // Rezolucion i mjaftueshëm për parapamje
+let width = img.width;
+let height = img.height;
+
+if (width > MAX_WIDTH) {
+height = Math.round((height * MAX_WIDTH) / width);
+width = MAX_WIDTH;
+}
+
+canvas.width = width;
+canvas.height = height;
+
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, width, height);
+
+// Konverton foton me cilësi 70% duke e bërë skedarin shumë të lehtë
+const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+callback(compressedBase64);
+};
+img.onerror = function() {
+callback("");
+};
+};
+reader.onerror = function() {
+callback("");
+};
+}
+
+// Shfaqja e të dhënave në tabelë
+function renderProjects() {
+const tbody = document.getElementById('projectsTableBody');
+tbody.innerHTML = '';
+
+if (projects.length === 0) {
+tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#6b7280; padding:20px;">Nuk ka asnjë projekt të rregjistruar.</td></tr>`;
+return;
+}
+
+projects.forEach((item, index) => {
+const imgHtml = item.foto
+? `<img src="${item.foto}" class="img-preview" alt="Projekt">`
+: `<span class="no-img">Pa foto</span>`;
+
+tbody.innerHTML += `
+<tr>
+<td>${imgHtml}</td>
+<td><strong>${item.name}</strong></td>
+<td>${item.yarnType}</td>
+<td style="white-space: pre-line;">${item.details || '-'}</td>
+<td>${item.weight ? item.weight + ' g' : '-'}</td>
+<td>${item.cost ? item.cost + ' €' : '-'}</td>
+<td><strong>${item.price ? item.price + ' €' : '-'}</strong></td>
+<td>
+<div class="action-btns">
+<button class="btn-action btn-edit" onclick="editProject(${index})">✏️ Ndrysho</button>
+<button class="btn-action btn-delete" onclick="deleteProject(${index})">🗑️ Fshi</button>
+</div>
+</td>
+</tr>
+`;
+});
+}
+
+// Ruajtja ose përditësimi i projektit
+document.getElementById('projectForm').addEventListener('submit', function (e) {
+e.preventDefault();
+
+const editIndex = parseInt(document.getElementById('editIndex').value);
+const name = document.getElementById('pName').value;
+const yarnType = document.getElementById('pYarnType').value;
+const details = document.getElementById('pDetails').value;
+const weight = document.getElementById('pWeight').value;
+const cost = document.getElementById('pCost').value;
+const price = document.getElementById('pPrice').value;
+const fileInput = document.getElementById('pFoto');
+
+const processSave = (fotoData) => {
+const newProject = {
+name,
+yarnType,
+details,
+weight,
+cost,
+price,
+foto: fotoData || (editIndex >= 0 ? projects[editIndex].foto : "")
+};
+
+if (editIndex >= 0) {
+projects[editIndex] = newProject;
+document.getElementById('editIndex').value = "-1";
+document.getElementById('btnSubmitText').innerText = "+ Rregjistro Projektin";
+} else {
+projects.push(newProject);
+}
+
+try {
+localStorage.setItem('myTuftingProjects', JSON.stringify(projects));
+renderProjects();
+document.getElementById('projectForm').reset();
+alert("Projekti u ruajt me sukses!");
+} catch (err) {
+alert("Ndodhi një problem gjatë ruajtjes! Memoria e shfletuesit është e plotë.");
+}
+};
+
+if (fileInput.files && fileInput.files[0]) {
+compressAndConvertImage(fileInput.files[0], function (compressedBase64) {
+processSave(compressedBase64);
+});
+} else {
+processSave("");
+}
+});
+
+// Ndryshimi i një projekti
+window.editProject = function (index) {
+const p = projects[index];
+document.getElementById('pName').value = p.name;
+document.getElementById('pYarnType').value = p.yarnType;
+document.getElementById('pDetails').value = p.details || "";
+document.getElementById('pWeight').value = p.weight || "";
+document.getElementById('pCost').value = p.cost || "";
+document.getElementById('pPrice').value = p.price || "";
+document.getElementById('editIndex').value = index;
+
+document.getElementById('btnSubmitText').innerText = "💾 Ruaj Ndryshimet";
+window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Fshirja e një projekti
+window.deleteProject = function (index) {
+if (confirm("A je i sigurt që dëshiron ta fshish këtë projekt?")) {
+projects.splice(index, 1);
+localStorage.setItem('myTuftingProjects', JSON.stringify(projects));
+renderProjects();
+}
+};
+
+// Ngarkojmë tabelën në fillim
+renderProjects();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth <= 699) {
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.closest('.table-responsive')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-responsive';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim() || 'Fusha');
+      table.querySelectorAll('tbody tr').forEach(row => {
+        [...row.children].forEach((cell, i) => cell.setAttribute('data-label', headers[i] || 'Fusha'));
+      });
+    });
+  }
+});
+</script>
+
+<script src="../cc-page-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventari i Produkteve - Tufting Studio</title>
+<style>
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+body { background-color: #e9ec0b; color: #333; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+h1 { text-align: center; color: #2C3E50; margin-bottom: 20px; }
+
+.form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.input-field { display: flex; flex-direction: column; }
+label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+
+button.add-btn { background-color: #2ECC71; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; }
+button.add-btn:hover { background-color: #27AE60; }
+
+.search-container { margin-top: 25px; margin-bottom: 15px; }
+.search-input { width: 100%; padding: 12px; border: 2px solid #3498DB; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; }
+.search-input:focus { border-color: #1D6FA5; box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); }
+
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; font-size: 15px; vertical-align: middle; }
+th { background-color: #f8f9fa; color: #555; }
+
+.item-num { font-weight: bold; color: #7F8C8D; width: 50px; }
+
+.qty-control { display: flex; align-items: center; gap: 8px; }
+.btn-qty { background-color: #3498DB; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-qty:hover { background-color: #2980B9; }
+.badge { padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px; }
+.in-stock { background-color: #D4EDDA; color: #155724; }
+.out-stock { background-color: #F8D7DA; color: #721C24; }
+
+.delete-btn { background-color: #E74C3C; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.delete-btn:hover { background-color: #C0392B; }
+</style>
+  <link rel="stylesheet" href="../cc-exact-pages.css">
+</head>
+<body class="cc-page cc-inventory">
+
+<div class="container">
+<h1>📦 Inventari & Stoku i Punimeve</h1>
+
+<form id="inventoryForm">
+<div class="form-group">
+<div class="input-field">
+<label for="itemName">Emri i Artikullit / Projektit</label>
+<input type="text" id="itemName" placeholder="p.sh. Qilim Tase Kaffe" required>
+</div>
+<div class="input-field">
+<label for="itemQty">Sasia (Copë)</label>
+<input type="number" id="itemQty" min="0" placeholder="p.sh. 3" required>
+</div>
+<div class="input-field">
+<label for="itemNotes">Shënime (Opsionale)</label>
+<input type="text" id="itemNotes" placeholder="p.sh. Madhësia 50x50 cm">
+</div>
+</div>
+<button type="submit" class="add-btn">+ Shto në Inventar</button>
+</form>
+
+<div class="search-container">
+<input type="text" id="searchInput" class="search-input" placeholder="🔍 Kërko artikull me emër..." onkeyup="filterInventory()">
+</div>
+
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Nr.</th>
+<th>Artikulli</th>
+<th>Shënime</th>
+<th>Sasia në Stok</th>
+<th>Statusi</th>
+<th>Veprim</th>
+</tr>
+</thead>
+<tbody id="inventoryTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const inventoryForm = document.getElementById('inventoryForm');
+const inventoryTableBody = document.getElementById('inventoryTableBody');
+const searchInput = document.getElementById('searchInput');
+
+let inventory = JSON.parse(localStorage.getItem('tuftingInventory')) || [];
+
+
+function displayInventory(itemsToRender = inventory) {
+inventoryTableBody.innerHTML = '';
+
+if (itemsToRender.length === 0) {
+inventoryTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">Nuk u gjet asnjë artikull.</td></tr>';
+return;
+}
+
+itemsToRender.forEach((item, displayIndex) => {
+const originalIndex = inventory.indexOf(item);
+const isAvailable = item.qty > 0;
+const statusClass = isAvailable ? 'in-stock' : 'out-stock';
+const statusText = isAvailable ? 'Në Gjendje' : 'I Shitur';
+
+const row = document.createElement('tr');
+row.innerHTML = `
+<td class="item-num">#${displayIndex + 1}</td>
+<td><strong>${item.name}</strong></td>
+<td>${item.notes || '-'}</td>
+<td>
+<div class="qty-control">
+<button class="btn-qty" onclick="updateQty(${originalIndex}, -1)">-</button>
+<span style="font-weight: bold; font-size: 16px;">${item.qty} copë</span>
+<button class="btn-qty" onclick="updateQty(${originalIndex}, 1)">+</button>
+</div>
+</td>
+<td><span class="badge ${statusClass}">${statusText}</span></td>
+<td><button class="delete-btn" onclick="deleteItem(${originalIndex})">Fshi</button></td>
+`;
+inventoryTableBody.appendChild(row);
+});
+}
+
+function filterInventory() {
+const query = searchInput.value.toLowerCase().trim();
+const filtered = inventory.filter(item => item.name.toLowerCase().includes(query));
+displayInventory(filtered);
+}
+
+inventoryForm.addEventListener('submit', function(e) {
+e.preventDefault();
+
+const newItem = {
+name: document.getElementById('itemName').value,
+qty: parseInt(document.getElementById('itemQty').value),
+notes: document.getElementById('itemNotes').value
+};
+
+inventory.push(newItem);
+saveAndRender();
+inventoryForm.reset();
+});
+
+function updateQty(index, change) {
+if (inventory[index].qty + change >= 0) {
+inventory[index].qty += change;
+saveAndRender();
+}
+}
+
+function deleteItem(index) {
+if(confirm("Dëshiron ta fshish këtë artikull nga inventari?")) {
+inventory.splice(index, 1);
+saveAndRender();
+}
+}
+
+async function saveAndRender() {
+
+    await fetch("http://127.0.0.1:5000/api/inventory", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(
+            inventory[inventory.length - 1]
+        )
+    });
+
+    loadInventory();
+    async function importToDatabase() {
+
+    await fetch("http://127.0.0.1:5000/api/import_inventory", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(inventory)
+
+    });
+
+    alert("Inventari u importua në SQLite.");
+
+}
+importToDatabase();
+
+}
+
+displayInventory();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth <= 699) {
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.closest('.table-responsive')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-responsive';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim() || 'Fusha');
+      table.querySelectorAll('tbody tr').forEach(row => {
+        [...row.children].forEach((cell, i) => cell.setAttribute('data-label', headers[i] || 'Fusha'));
+      });
+    });
+  }
+});
+</script>
+
+<script src="../cc-page-ui.js"></script>
+</body>
+</html>

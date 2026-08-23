@@ -1,0 +1,44 @@
+{
+  "name": "PROJECT",
+  "productName": "Cuffi Creates Studio",
+  "version": "1.0.0",
+  "description": "Studio Management System",
+  "main": "main.js",
+  "author": "Jimmi",
+  "license": "ISC",
+
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0"
+  },
+
+  "build": {
+    "appId": "com.cufficreates.studio",
+    "productName": "Cuffi Creates Studio",
+
+    "directories": {
+      "output": "dist"
+    },
+
+    "files": [
+      "**/*"
+    ],
+
+    "win": {
+      "target": "nsis",
+      "icon": "assets/Cuffi-logo.ico"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

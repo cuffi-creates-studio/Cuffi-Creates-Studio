@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="sq">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cuffi Creates Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="mobile-premium.css" />
+  <link rel="stylesheet" href="cc-internal-views.css">
+</head>
+<body>
+
+  <section id="loginOverlay" class="login-overlay" aria-labelledby="loginTitle">
+    <div class="login-card">
+      <div class="login-logo-wrap">
+        <img src="./assets/CuffiCreatesNeon1.png" alt="Cuffi Creates Logo">
+      </div>
+      <span class="login-eyebrow">CUFFI CREATES STUDIO</span>
+      <h1 id="loginTitle">Hyr në sistem</h1>
+      <p>Përdor të dhënat e tua për të hapur Studio OS.</p>
+      <form id="loginForm" autocomplete="on">
+        <label>Përdoruesi
+          <span class="login-field"><i class="fa-regular fa-user"></i><input id="loginUsername" name="username" autocomplete="username" required placeholder="Shkruaj përdoruesin"></span>
+        </label>
+        <label>Fjalëkalimi
+          <span class="login-field"><i class="fa-solid fa-lock"></i><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Shkruaj fjalëkalimin"><button type="button" id="togglePassword" aria-label="Shfaq ose fshih fjalëkalimin"><i class="fa-regular fa-eye"></i></button></span>
+        </label>
+        <label class="remember-row"><input id="rememberLogin" type="checkbox"> <span>Më mbaj të kyçur</span></label>
+        <div id="loginError" class="login-error" role="alert"></div>
+        <button class="login-submit" type="submit"><i class="fa-solid fa-right-to-bracket"></i> HYR TANI</button>
+      </form>
+    </div>
+  </section>
+  
+  <!-- CUFFI mobile premium shell: presentation only, existing app logic stays in app.js -->
+  <div class="mp-shell" id="mpShell" aria-hidden="true">
+    <header class="mp-header">
+      <button class="mp-header-btn mp-menu-btn" id="mpMenuBtn" aria-label="Hap programet"><i class="fa-solid fa-bars"></i></button>
+      <img class="mp-top-logo" src="assets/CuffiCreatesNeon.png" alt="Cuffi Creates">
+      <button class="mp-header-btn mp-bell-btn" id="mpBellBtn" aria-label="Njoftime"><i class="fa-regular fa-bell"></i><span class="mp-bell-dot"></span></button>
+    </header>
+
+    <main class="mp-dashboard" id="mpDashboard">
+      <label class="mp-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="mpSearch" placeholder="Kërko në studio..." autocomplete="off">
+        <i class="fa-solid fa-sliders"></i>
+      </label>
+
+      <section class="mp-hero">
+        <div class="mp-hero-copy">
+          <span class="mp-kicker">STUDIO MANAGEMENT SYSTEM</span>
+          <div class="mp-greeting"><span id="mpGreetingPart">Mirëmbrëma,</span><strong id="mpGreetingName">Jimmi 👋</strong></div>
+          <div class="mp-script">Cuffi Creates Studio</div>
+          <p>Menaxho projektet, materialet, shitjet, faturat dhe terminet nga një vend i vetëm.</p>
+          <button class="mp-primary" id="mpAddAppointment"><i class="fa-regular fa-calendar-plus"></i><span>Shto një termin</span></button>
+        </div>
+        <div class="mp-hero-art"><img src="assets/studio-hero.png" alt="Cuffi Creates Studio"></div>
+      </section>
+
+      <section class="mp-time-card">
+        <div class="mp-clock-side">
+          <h3>Matësi i orëve të punës</h3>
+          <div class="mp-clock" id="mpClock">
+            <span class="c12">12</span><span class="c1">1</span><span class="c2">2</span><span class="c3">3</span><span class="c4">4</span><span class="c5">5</span><span class="c6">6</span><span class="c7">7</span><span class="c8">8</span><span class="c9">9</span><span class="c10">10</span><span class="c11">11</span>
+            <b class="mp-hand mp-hour" id="mpHour"></b><b class="mp-hand mp-minute" id="mpMinute"></b><b class="mp-hand mp-second" id="mpSecond"></b><i class="mp-clock-pin"></i>
+          </div>
+        </div>
+        <div class="mp-timer-side">
+          <span>Koha e punës sot</span>
+          <strong id="mpTimer">00:00:00</strong>
+          <div class="mp-timer-buttons"><button id="mpStart"><i class="fa-solid fa-play"></i> START</button><button id="mpStop"><i class="fa-solid fa-stop"></i> STOP</button></div>
+          <hr>
+          <small>Totali i sotëm</small>
+          <b id="mpTodayTotal">00:00:00</b>
+        </div>
+      </section>
+
+      <section class="mp-kpis">
+        <article class="mp-kpi mp-purple"><i class="fa-solid fa-euro-sign"></i><div><span>Të Ardhurat (Muj.)</span><strong id="mpRevenue">€0</strong><small>Nga faturat dhe shitjet</small></div></article>
+        <article class="mp-kpi mp-blue"><i class="fa-solid fa-bag-shopping"></i><div><span>Porositë (Muj.)</span><strong id="mpOrders">0</strong><small>Porosi të regjistruara</small></div></article>
+        <article class="mp-kpi mp-cyan"><i class="fa-regular fa-clipboard"></i><div><span>Projekte Aktive</span><strong id="mpProjects">0</strong><small>Nga Menager Tufting</small></div></article>
+        <article class="mp-kpi mp-pink"><i class="fa-solid fa-users"></i><div><span>Klientë</span><strong id="mpClients">0</strong><small>Klientë unikë</small></div></article>
+      </section>
+
+      <section class="mp-quick">
+        <h3>Veprime të shpejta</h3>
+        <div>
+          <button id="mpQuickAppointment"><i class="fa-regular fa-calendar-plus"></i><span>Shto Termin</span></button>
+          <button data-app="invoice"><i class="fa-regular fa-file-lines"></i><span>Faturë e re</span></button>
+          <button data-app="managerTufting"><i class="fa-regular fa-folder-open"></i><span>Projekt i ri</span></button>
+          <button data-app="salesManager"><i class="fa-solid fa-user-plus"></i><span>Shto Klient</span></button>
+        </div>
+      </section>
+
+      <section class="mp-upcoming">
+        <div class="mp-section-head"><h3>Terminat e ardhshëm</h3><button data-view="appointments">Shiko të gjitha <i class="fa-solid fa-chevron-right"></i></button></div>
+        <div id="mpUpcomingBody" class="mp-upcoming-body"><span class="mp-empty">Nuk ka termine të ardhshme.</span></div>
+      </section>
+    </main>
+
+    <div class="mp-mobile-notifications" id="mpMobileNotifications" aria-hidden="true">
+      <div class="mp-mobile-notifications-head"><strong>Njoftimet</strong><button id="mpMobileNotificationsClose" aria-label="Mbyll njoftimet"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="mp-mobile-notifications-list" id="mpMobileNotificationsList"><div class="mp-mobile-notifications-empty">Nuk ka njoftime.</div></div>
+    </div>
+    <div class="mp-notification-overlay" id="mpNotificationOverlay"></div>
+
+    <div class="mp-drawer-overlay" id="mpDrawerOverlay"></div>
+    <aside class="mp-drawer" id="mpDrawer" aria-label="Programet">
+      <div class="mp-drawer-top"><img src="assets/CuffiCreatesNeon.png" alt="Cuffi Creates"><button id="mpDrawerClose" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
+      <h2>Programet</h2><div class="mp-neon-line"></div>
+      <nav id="mpDrawerList">
+        <button data-app="managerTufting"><span class="mp-app-icon violet"><i class="fa-solid fa-gun"></i></span><strong>Menager Tufting</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="inventory"><span class="mp-app-icon blue"><i class="fa-solid fa-cube"></i></span><strong>Inventar Tufting</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="ngjyrat"><span class="mp-app-icon green"><i class="fa-solid fa-palette"></i></span><strong>Inventari i Ngjyrave</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="projectSheet"><span class="mp-app-icon violet"><i class="fa-solid fa-clipboard-list"></i></span><strong>Fleta e Projektit</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="salesManager"><span class="mp-app-icon blue"><i class="fa-solid fa-cart-shopping"></i></span><strong>Menager Shitje</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="salesControl"><span class="mp-app-icon green"><i class="fa-solid fa-chart-column"></i></span><strong>Kontrolli i Shitjeve</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="invoice"><span class="mp-app-icon violet"><i class="fa-solid fa-receipt"></i></span><strong>Fatura</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-app="calculator"><span class="mp-app-icon blue"><i class="fa-solid fa-calculator"></i></span><strong>Llogaritëse</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-view="appointments"><span class="mp-app-icon violet"><i class="fa-regular fa-calendar"></i></span><strong>Terminat</strong><i class="fa-solid fa-chevron-right"></i></button>
+        <button data-view="settings"><span class="mp-app-icon blue"><i class="fa-solid fa-gear"></i></span><strong>Cilësimet</strong><i class="fa-solid fa-chevron-right"></i></button>
+      </nav>
+      <div class="mp-drawer-brand"><img src="assets/studio-hero.png" alt="Studio"><div><strong>Cuffi Creates Studio</strong><span>Krijo. Menaxho. Rrit.</span></div></div>
+    </aside>
+
+    <nav class="mp-bottom">
+      <button class="active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+      <button id="mpProgramsBottom"><i class="fa-solid fa-grip"></i><span>Programet</span></button>
+      <button class="mp-plus" id="mpPlus"><i class="fa-solid fa-plus"></i></button>
+      <button data-view="appointments"><i class="fa-regular fa-calendar"></i><span>Terminat</span></button>
+      <button id="mpMore"><i class="fa-solid fa-ellipsis"></i><span>Më shumë</span></button>
+    </nav>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><img src="assets/CuffiCreatesNeon.png" alt="Cuffi Creates Creates  Neon"></div>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+        <button class="nav-item" data-app="managerTufting"><i class="fa-solid fa-yarn"></i><span>Menager Tufting</span></button>
+        <button class="nav-item" data-app="inventory"><i class="fa-solid fa-box"></i><span>Inventar Tufting</span></button>
+        <button class="nav-item" data-app="ngjyrat"><i class="fa-solid fa-palette"></i><span>Inventari i Ngjyrave</span></button>
+        <button class="nav-item" data-app="projectSheet"><i class="fa-solid fa-clipboard-list"></i><span>Fleta e Projektit</span></button>
+        <button class="nav-item" data-app="salesManager"><i class="fa-solid fa-money-bill-wave"></i><span>Menager Shitje</span></button>
+        <button class="nav-item" data-app="salesControl"><i class="fa-solid fa-chart-column"></i><span>Kontrolli i Shitjeve</span></button>
+        <button class="nav-item" data-app="invoice"><i class="fa-solid fa-receipt"></i><span>Fatura</span></button>
+       <button class="nav-item" data-app="calculator"><i class="fa-solid fa-calculator"></i><span>Llogaritëse</span></button>
+        <button class="nav-item" data-view="appointments"><i class="fa-regular fa-calendar-check"></i><span>Terminat</span></button>
+        <button class="nav-item" data-view="workhours"><i class="fa-regular fa-clock"></i><span>Orët e Punës</span></button>
+        <button class="nav-item" data-view="statistics"><i class="fa-solid fa-chart-line"></i><span>Statistikat</span></button>
+        <button class="nav-item" data-view="gallery"><i class="fa-regular fa-image"></i><span>Galeria</span></button>
+        <button class="nav-item" data-view="backup"><i class="fa-solid fa-cloud-arrow-down"></i><span>Backup & Restore</span></button>
+        <button class="nav-item" data-view="settings"><i class="fa-solid fa-gear"></i><span>Cilësimet</span></button>
+        
+      </nav>
+
+      <div class="profile-card">
+        <div class="avatar">J</div>
+        <div><strong>Jimmi</strong><span><i></i> Online</span></div>
+        <button id="resetView" title="Dil nga sistemi"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div><h1 id="topTitle">Dashboard</h1><p id="todayText"></p></div>
+        <div class="top-actions">
+          <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="appSearch" placeholder="Kërko aplikacionin..."></label>
+          <button class="icon-btn" id="notificationButton" title="Njoftime"><i class="fa-regular fa-bell"></i><span class="badge is-hidden" id="notificationBadge">0</span></button>
+          <div class="notification-popover" id="notificationPopover"><div class="notification-head"><strong>Njoftimet</strong><button id="closeNotifications"><i class="fa-solid fa-xmark"></i></button></div><div id="notificationList" class="notification-list"></div></div>
+          <button class="icon-btn" id="jumpCalendar" title="Kalendari"><i class="fa-regular fa-calendar"></i></button>
+          <button class="icon-btn" data-view="settings" title="Cilësimet"><i class="fa-solid fa-gear"></i></button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view active">
+        <section class="hero-panel panel">
+          <div class="hero-copy">
+            <span class="eyebrow">STUDIO MANAGEMENT SYSTEM</span>
+            <h2 id="greeting">Mirëmëngjes, Jimmi 👋</h2>
+            <div class="neon-script">Cuffi Creates Studio</div>
+            <p>Menaxho projektet, materialet, shitjet, faturat dhe terminet nga një vend i vetëm.</p>
+            <button class="primary-btn" id="heroAddEvent"><i class="fa-regular fa-calendar-plus"></i> Shto një termin</button>
+          </div>
+
+          <div class="clock-wrap" aria-label="Ora analoge">
+            <div class="analog-clock" id="analogClock">
+              <div class="clock-number n12">12</div><div class="clock-number n1">1</div><div class="clock-number n2">2</div><div class="clock-number n3">3</div><div class="clock-number n4">4</div><div class="clock-number n5">5</div><div class="clock-number n6">6</div><div class="clock-number n7">7</div><div class="clock-number n8">8</div><div class="clock-number n9">9</div><div class="clock-number n10">10</div><div class="clock-number n11">11</div>
+              <div class="hand hour" id="hourHand"></div><div class="hand minute" id="minuteHand"></div><div class="hand second" id="secondHand"></div><div class="clock-center"></div>
+            </div>
+          </div>
+
+          <div class="work-timer">
+            <span class="eyebrow">MATËSI I ORËVE TË PUNËS</span>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-actions"><button class="start-btn" id="startTimer"><i class="fa-solid fa-play"></i> START</button><button class="stop-btn" id="stopTimer"><i class="fa-solid fa-stop"></i> STOP</button></div>
+            <div class="today-total"><span>TOTALI I SOTËM</span><strong id="todayTotal">00:00:00</strong></div>
+          </div>
+        </section>
+
+        <section class="metrics-grid">
+          <article class="metric-card purple"><i class="fa-solid fa-euro-sign"></i><div><span>Të Ardhurat (Muaj)</span><strong id="metricRevenue">€0</strong><small id="metricRevenueTrend">Nga faturat dhe shitjet</small></div></article>
+          <article class="metric-card blue"><i class="fa-solid fa-bag-shopping"></i><div><span>Porosi (Muaj)</span><strong id="metricOrders">0</strong><small id="metricOrdersTrend">Porosi të regjistruara</small></div></article>
+          <article class="metric-card pink"><i class="fa-regular fa-clipboard"></i><div><span>Projekte Aktive</span><strong id="metricProjects">0</strong><small id="metricProjectsTrend">Nga Menager Tufting</small></div></article>
+          <article class="metric-card green"><i class="fa-solid fa-users"></i><div><span>Klientë</span><strong id="metricClients">0</strong><small id="metricClientsTrend">Klientë unikë</small></div></article>
+        </section>
+
+        <section class="quick-section">
+          <h3>Quick Launch</h3>
+          <div class="quick-grid" id="quickGrid">
+            <button class="quick-card cyan" data-app="managerTufting"><span class="quick-icon"><i class="fa-solid fa-yarn"></i></span><span><strong>Menager Tufting</strong><small>Projektet dhe puna e studios</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card green" data-app="inventory"><span class="quick-icon"><i class="fa-solid fa-box"></i></span><span><strong>Inventar Tufting</strong><small>Materialet dhe stoku</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card pink" data-app="projectSheet"><span class="quick-icon"><i class="fa-solid fa-clipboard-list"></i></span><span><strong>Fleta e Projekteve</strong><small>Kosto dhe detaje projekti</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card lime" data-app="salesManager"><span class="quick-icon"><i class="fa-solid fa-money-bill-wave"></i></span><span><strong>Menager Shitje</strong><small>Porosi dhe klientë</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card blue" data-app="salesControl"><span class="quick-icon"><i class="fa-solid fa-chart-column"></i></span><span><strong>Kontrolli i Shitjeve</strong><small>Analiza dhe performanca</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card pink" data-app="invoice"><span class="quick-icon"><i class="fa-solid fa-receipt"></i></span><span><strong>Fatura</strong><small>Krijo dhe printo faturat</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card amber" data-view="gallery"><span class="quick-icon"><i class="fa-regular fa-image"></i></span><span><strong>Galeria</strong><small>Fotot e projekteve</small></span><i class="fa-solid fa-arrow-right"></i></button>
+            <button class="quick-card blue" data-view="settings"><span class="quick-icon"><i class="fa-solid fa-gear"></i></span><span><strong>Cilësimet</strong><small>Konfiguro sistemin</small></span><i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </section>
+
+        <section class="panel upcoming-panel">
+          <div class="section-head"><div><h3>Terminat e ardhshme</h3><p>Takimet dhe detyrat që ke planifikuar.</p></div><button class="secondary-btn" data-view="appointments"><i class="fa-regular fa-calendar-check"></i> Shiko të gjitha</button></div>
+          <div id="upcomingAppointments" class="upcoming-list"></div>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="panel calendar-panel" id="calendarPanel">
+            <div class="section-head"><h3>Kalendari Mujor</h3><div class="month-nav"><button id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button><strong id="monthTitle"></strong><button id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button></div></div>
+            <div class="weekdays"><span>Hën</span><span>Mar</span><span>Mër</span><span>Enj</span><span>Pre</span><span>Sht</span><span>Die</span></div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </article>
+
+          <article class="panel notes-panel">
+            <div class="section-head"><h3>Shënime të shpejta</h3><button class="mini-plus" id="addNoteBtn"><i class="fa-solid fa-plus"></i></button></div>
+            <div class="note-input"><input id="noteInput" placeholder="Shkruaj një shënim..."><button id="saveNote"><i class="fa-solid fa-plus"></i></button></div>
+            <div class="notes-list" id="notesList"></div>
+          </article>
+        </section>
+      </section>
+
+      <section id="appointmentsView" class="view">
+        <div class="view-heading"><div class="heading-left"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><div><span class="eyebrow">STUDIO SCHEDULE</span><h2>Terminat</h2><p>Shiko, ndrysho, përfundo ose fshi terminet e ruajtura.</p></div></div><button class="primary-btn" id="addAppointment"><i class="fa-regular fa-calendar-plus"></i> Shto termin</button></div>
+        <div class="appointment-toolbar panel"><label><i class="fa-solid fa-magnifying-glass"></i><input id="appointmentSearch" placeholder="Kërko sipas klientit ose përshkrimit..."></label><select id="appointmentFilter"><option value="upcoming">Të ardhshme</option><option value="today">Sot</option><option value="all">Të gjitha</option><option value="completed">Të përfunduara</option></select></div>
+        <article class="panel calendar-panel appointments-calendar-panel" id="appointmentsCalendarPanel"><div class="section-head"><h3>Kalendari</h3><div class="month-nav"><button id="appointmentsPrevMonth"><i class="fa-solid fa-chevron-left"></i></button><strong id="appointmentsMonthTitle"></strong><button id="appointmentsNextMonth"><i class="fa-solid fa-chevron-right"></i></button></div></div><div class="weekdays"><span>Hën</span><span>Mar</span><span>Mër</span><span>Enj</span><span>Pre</span><span>Sht</span><span>Die</span></div><div class="calendar-grid" id="appointmentsCalendarGrid"></div></article>
+        <div id="appointmentsList" class="appointments-list"></div>
+      </section>
+
+      <section id="workhoursView" class="view">
+        <div class="view-heading"><div class="heading-left"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><div><span class="eyebrow">TIME TRACKING</span><h2>Orët e Punës</h2><p>Çdo ndalesë ruhet me datë, orë fillimi, orë mbarimi dhe përshkrim.</p></div></div><button class="secondary-btn" id="exportWorkCsv"><i class="fa-solid fa-file-csv"></i> Eksporto CSV</button></div>
+        <section class="work-summary-grid">
+          <article class="panel work-live-card"><span class="eyebrow">SOT</span><strong id="workTodayBig">00:00:00</strong><span id="workLiveStatus">Matësi është i ndalur</span></article>
+          <article class="panel work-stat-card"><span>Këtë javë</span><strong id="workWeekTotal">00:00</strong><small>Totali i seancave të ruajtura</small></article>
+          <article class="panel work-stat-card"><span>Këtë muaj</span><strong id="workMonthTotal">00:00</strong><small>Orët e muajit aktual</small></article>
+          <article class="panel work-stat-card"><span>Ditë pune</span><strong id="workDaysCount">0</strong><small>Ditë me të paktën një seancë</small></article>
+        </section>
+        <div class="panel work-history-panel">
+          <div class="section-head"><div><h3>Regjistri i orëve të punës</h3><p>Historia ruhet në browser sipas datës.</p></div><button class="danger-btn compact" id="clearWorkHistory"><i class="fa-solid fa-trash"></i> Pastro historikun</button></div>
+          <div class="table-scroll"><table class="data-table"><thead><tr><th>Data</th><th>Start</th><th>Stop</th><th>Kohë</th><th>Përshkrimi</th><th></th></tr></thead><tbody id="workHistoryBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="statisticsView" class="view">
+        <div class="view-heading"><div class="heading-left"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><div><span class="eyebrow">REAL DATA</span><h2>Statistikat</h2><p>Vlerat lexohen nga të dhënat reale të programeve të tua në LocalStorage.</p></div></div><button class="secondary-btn" id="refreshStats"><i class="fa-solid fa-rotate"></i> Rifresko</button></div>
+        <section class="stats-summary metrics-grid">
+          <article class="metric-card purple"><i class="fa-solid fa-euro-sign"></i><div><span>Të ardhura gjithsej</span><strong id="statsRevenue">€0</strong><small>Fatura + shitje</small></div></article>
+          <article class="metric-card blue"><i class="fa-solid fa-coins"></i><div><span>Fitimi i regjistruar</span><strong id="statsProfit">€0</strong><small>Nga Menager Shitje</small></div></article>
+          <article class="metric-card pink"><i class="fa-solid fa-file-invoice"></i><div><span>Fatura</span><strong id="statsInvoices">0</strong><small>Porosi në faturim</small></div></article>
+          <article class="metric-card green"><i class="fa-solid fa-boxes-stacked"></i><div><span>Artikuj inventari</span><strong id="statsInventory">0</strong><small>Rreshta në inventar</small></div></article>
+        </section>
+        <div class="stats-grid">
+          <article class="panel chart-panel"><div class="section-head"><div><h3>Të ardhurat sipas muajit</h3><p>Llogaritur nga faturat me datë të vlefshme.</p></div></div><canvas id="revenueChart" width="900" height="360"></canvas></article>
+          <article class="panel data-health"><h3>Burimet e të dhënave</h3><div id="dataSourceStatus"></div></article>
+        </div>
+      </section>
+
+      <section id="backupView" class="view">
+        <div class="view-heading"><div class="heading-left"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><div><span class="eyebrow">DATA SAFETY</span><h2>Backup & Restore</h2><p>Ruaj një kopje të të gjitha të dhënave lokale dhe riktheje kur të duhet.</p></div></div></div>
+        <div class="backup-grid">
+          <article class="panel backup-card"><i class="fa-solid fa-download"></i><h3>Krijo Backup</h3><p>Eksporton terminet, galerinë, shënimet, orët dhe të dhënat e programeve në një skedar JSON.</p><button class="primary-btn" id="exportBackup">Shkarko Backup</button></article>
+          <article class="panel backup-card"><i class="fa-solid fa-upload"></i><h3>Rikthe Backup</h3><p>Zgjidh një skedar backup të krijuar nga ky sistem. Të dhënat aktuale do të zëvendësohen.</p><label class="secondary-btn upload-label">Zgjidh skedarin<input id="importBackup" type="file" accept="application/json,.json" hidden></label></article>
+        </div>
+      </section>
+
+      <section id="galleryView" class="view">
+        <div class="view-heading"><div class="heading-left"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><div><span class="eyebrow">STUDIO MEDIA</span><h2>Galeria</h2><p>Ngarko, shiko dhe menaxho fotot e projekteve.</p></div></div><label class="primary-btn upload-label"><i class="fa-solid fa-cloud-arrow-up"></i> Ngarko foto<input id="galleryUpload" type="file" accept="image/*" multiple hidden></label></div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <div class="settings-card panel"><button class="view-back-btn" data-view="dashboard" aria-label="Mbrapa"><i class="fa-solid fa-arrow-left"></i></button><span class="eyebrow">SYSTEM</span><h2>Cilësimet</h2><div class="setting-row"><div><strong>Emri në përshëndetje</strong><span>Ky emër shfaqet në Dashboard.</span></div><input id="nameSetting" value="Jimmi"></div><div class="setting-row"><div><strong>Gjuha e faqes</strong><span>Zgjidh gjuhën që preferon për ndërfaqen.</span></div><select id="languageSetting"><option value="sq">Shqip</option><option value="de">Deutsch</option><option value="en">English</option></select></div><div class="setting-row"><div><strong>Njoftimet e termineve</strong><span>Lejo browser-in të të njoftojë 30 minuta para dhe në orën e terminit.</span></div><div class="toggle-group"><button class="secondary-btn" id="enableNotifications">Aktivizo</button><button class="secondary-btn" id="disableNotifications">Çaktivizo</button></div></div><div class="setting-row"><div><strong>Pastro të dhënat lokale</strong><span>Fshin terminet, shënimet dhe orët e ruajtura.</span></div><button class="danger-btn" id="clearData">Pastro</button></div></div>
+      </section>
+
+      <section id="appView" class="view app-view">
+        <div class="app-toolbar"><div><button class="icon-btn" id="backDashboard"><i class="fa-solid fa-arrow-left"></i></button><strong id="activeAppName">Aplikacioni</strong></div><div><button class="secondary-btn" id="refreshFrame"><i class="fa-solid fa-rotate-right"></i> Rifresko</button><button class="secondary-btn" id="openNewTab"><i class="fa-solid fa-up-right-from-square"></i> Hap veçmas</button></div></div>
+        <div class="frame-shell"><div class="loader" id="frameLoader"><div class="spinner"></div><span>CUFFI CREATES STUDIO</span></div><iframe id="appFrame" title="Studio application"></iframe></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="eventDialog" class="modal">
+    <form method="dialog" id="eventForm">
+      <div class="modal-head"><h3>Shto termin</h3><button value="cancel"><i class="fa-solid fa-xmark"></i></button></div>
+      <input type="hidden" id="eventId"><input type="hidden" id="eventDate">
+      <label>Data<input id="eventDateText" readonly></label>
+      <label>Ora<input id="eventTime" type="time" required></label>
+      <label>Klienti / Titulli<input id="eventTitle" required placeholder="p.sh. Takim me klientin"></label>
+      <label>Shënim<textarea id="eventNote" rows="3" placeholder="Detaje shtesë"></textarea></label>
+      <label class="completed-check"><input id="eventCompleted" type="checkbox"> <span>Shënoje si të përfunduar</span></label>
+      <div class="modal-actions"><button value="cancel" class="secondary-btn">Anulo</button><button value="default" class="primary-btn" id="saveEvent">Ruaj termin</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="workDialog" class="modal">
+    <form method="dialog" id="workForm">
+      <div class="modal-head"><h3>Ruaj orët e punës</h3><button value="cancel"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="modal-info">Seanca u ndal. Shto një përshkrim të shkurtër për punën e bërë.</p>
+      <label>Përshkrimi<input id="workDescription" placeholder="p.sh. Projekt tufting, përgatitje materialesh"></label>
+      <div class="work-session-preview" id="workSessionPreview"></div>
+      <div class="modal-actions"><button value="cancel" class="secondary-btn" id="discardWorkSession">Mos e ruaj</button><button value="default" class="primary-btn" id="saveWorkSession">Ruaj seancën</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="imageDialog" class="image-modal"><button id="closeImage"><i class="fa-solid fa-xmark"></i></button><img id="largeImage" alt="Foto e galerisë"><div id="imageCaption"></div></dialog>
+
+  <script src="app.js"></script>
+  <script src="mobile-ui.js"></script>
+
+  <!-- Electron bridge for applications loaded inside appFrame -->
+  <script>
+    (function () {
+      const frame = document.getElementById("appFrame");
+      if (!frame) return;
+
+      frame.addEventListener("load", function () {
+        try {
+          // hub.html has Node access from Electron. Pass only the IPC object
+          // needed by child pages such as ngjyrat.html.
+          const { ipcRenderer } = require("electron");
+          frame.contentWindow.electronIPC = ipcRenderer;
+
+          // Compatibility with the current ngjyrat.html migration code,
+          // which checks for require("electron").
+          if (typeof frame.contentWindow.require !== "function") {
+            frame.contentWindow.require = require;
+          }
+
+          console.log("Electron IPC bridge connected to:", frame.src);
+        } catch (error) {
+          console.error("Electron IPC bridge failed:", error);
+        }
+      });
+    })();
+  </script>
+  
+</body>
+</html>

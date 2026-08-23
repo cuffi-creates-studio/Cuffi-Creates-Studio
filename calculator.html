@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<title>Llogaritëse Futuriste</title>
+<style>
+body {
+background-color: #0d1117;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+margin: 0;
+font-family: 'Segoe UI', sans-serif;
+}
+.futuristic-calc {
+width: 320px;
+background: #161b22;
+padding: 22px;
+border-radius: 20px;
+box-shadow: 0 0 25px rgba(0, 242, 254, 0.3), inset 0 0 10px rgba(0, 242, 254, 0.1);
+border: 2px solid #00f2fe;
+}
+.calc-screen {
+background: #050b14;
+border: 1px solid #00f2fe;
+box-shadow: inset 0 0 15px rgba(0, 242, 254, 0.3);
+border-radius: 12px;
+padding: 15px;
+text-align: right;
+margin-bottom: 20px;
+min-height: 70px;
+}
+.calc-previous { color: #00f2fe; font-size: 14px; opacity: 0.7; min-height: 18px; font-family: monospace; }
+.calc-current { color: #4facfe; font-size: 30px; font-weight: bold; font-family: monospace; text-shadow: 0 0 8px rgba(79, 172, 254, 0.8); }
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.calc-btn {
+background: rgba(30, 41, 59, 0.8); color: #fff; border: 1px solid rgba(0, 242, 254, 0.2);
+border-radius: 10px; padding: 15px 0; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
+}
+.calc-btn:hover { background: #00f2fe; color: #050b14; box-shadow: 0 0 12px #00f2fe; }
+.calc-btn.action-btn { background: #ff4757; color: white; border: none; }
+.calc-btn.operator-btn { background: rgba(79, 172, 254, 0.2); color: #00f2fe; border: 1px solid #00f2fe; }
+.calc-btn.span-2 { grid-row: span 2; height: 100%; background: #00f2fe; color: #050b14; font-size: 20px; }
+</style>
+  <link rel="stylesheet" href="cc-exact-pages.css">
+</head>
+<body class="cc-page cc-calc">
+<div class="futuristic-calc">
+<div class="calc-screen">
+<div class="calc-previous" id="calcPrevious"></div>
+<div class="calc-current" id="calcCurrent">0</div>
+</div>
+<div class="calc-grid">
+<button class="calc-btn action-btn" onclick="clearCalc()">AC</button>
+<button class="calc-btn action-btn" onclick="deleteCalc()">DEL</button>
+<button class="calc-btn operator-btn" onclick="appendOperator('/')">÷</button>
+<button class="calc-btn operator-btn" onclick="appendOperator('*')">×</button>
+
+<button class="calc-btn" onclick="appendNum('7')">7</button>
+<button class="calc-btn" onclick="appendNum('8')">8</button>
+<button class="calc-btn" onclick="appendNum('9')">9</button>
+<button class="calc-btn operator-btn" onclick="appendOperator('-')">-</button>
+
+<button class="calc-btn" onclick="appendNum('4')">4</button>
+<button class="calc-btn" onclick="appendNum('5')">5</button>
+<button class="calc-btn" onclick="appendNum('6')">6</button>
+<button class="calc-btn operator-btn" onclick="appendOperator('+')">+</button>
+
+<button class="calc-btn" onclick="appendNum('1')">1</button>
+<button class="calc-btn" onclick="appendNum('2')">2</button>
+<button class="calc-btn" onclick="appendNum('3')">3</button>
+<button class="calc-btn span-2" onclick="computeCalc()">=</button>
+
+<button class="calc-btn" style="grid-column: span 2;" onclick="appendNum('0')">0</button>
+<button class="calc-btn" onclick="appendNum('.')">.</button>
+</div>
+</div>
+
+<script>
+let currentOperand = '0', previousOperand = '', operation = undefined;
+function updateDisplay() {
+document.getElementById('calcCurrent').innerText = currentOperand;
+document.getElementById('calcPrevious').innerText = previousOperand;
+}
+function appendNum(num) {
+if (num === '.' && currentOperand.includes('.')) return;
+currentOperand = (currentOperand === '0' && num !== '.') ? num.toString() : currentOperand + num;
+updateDisplay();
+}
+function appendOperator(op) {
+if (currentOperand === '') return;
+if (previousOperand !== '') computeCalc();
+operation = op; previousOperand = `${currentOperand} ${operation}`; currentOperand = ''; updateDisplay();
+}
+function clearCalc() { currentOperand = '0'; previousOperand = ''; operation = undefined; updateDisplay(); }
+function deleteCalc() { currentOperand = currentOperand.slice(0, -1) || '0'; updateDisplay(); }
+function computeCalc() {
+let prev = parseFloat(previousOperand), current = parseFloat(currentOperand), res;
+if (isNaN(prev) || isNaN(current)) return;
+switch (operation) {
+case '+': res = prev + current; break;
+case '-': res = prev - current; break;
+case '*': res = prev * current; break;
+case '/': res = prev / current; break;
+default: return;
+}
+currentOperand = res.toString(); operation = undefined; previousOperand = ''; updateDisplay();
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth <= 699) {
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.closest('.table-responsive')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-responsive';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim() || 'Fusha');
+      table.querySelectorAll('tbody tr').forEach(row => {
+        [...row.children].forEach((cell, i) => cell.setAttribute('data-label', headers[i] || 'Fusha'));
+      });
+    });
+  }
+});
+</script>
+
+<script src="cc-page-ui.js"></script>
+</body>
+</html>

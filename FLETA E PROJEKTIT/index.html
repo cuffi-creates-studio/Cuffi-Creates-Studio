@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Tufting - Menaxhimi i Porosive</title>
+<style>
+* { box-sizing: border-box; }
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background-color: #d92525;
+color: #333;
+margin: 0;
+padding: 15px;
+}
+
+.main-layout {
+display: flex;
+gap: 15px;
+max-width: 1400px;
+margin: 0 auto;
+align-items: flex-start;
+}
+
+.paper-container {
+flex: 1;
+background: #ffffff;
+padding: 25px;
+border-radius: 8px;
+box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+border: 4px solid #b31b1b;
+}
+
+.sidebar {
+width: 340px;
+background: #ffffff;
+padding: 15px;
+border-radius: 8px;
+border: 3px solid #b31b1b;
+box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+position: sticky;
+top: 15px;
+}
+.sidebar-header {
+font-size: 14px;
+font-weight: bold;
+color: #b31b1b;
+border-bottom: 2px solid #b31b1b;
+padding-bottom: 8px;
+margin-bottom: 12px;
+text-transform: uppercase;
+}
+
+.nav-controls {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: #fff0f0;
+padding: 10px;
+border-radius: 6px;
+border: 1px solid #ffcccc;
+margin-bottom: 15px;
+}
+.nav-btn {
+background: #b31b1b;
+color: white;
+border: none;
+padding: 6px 10px;
+border-radius: 4px;
+cursor: pointer;
+font-weight: bold;
+font-size: 12px;
+}
+.nav-btn:hover { background: #8a1212; }
+.nav-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+.order-card {
+background: #fdfdfd;
+border: 1px solid #e0e0e0;
+border-left: 6px solid #28a745;
+padding: 10px;
+margin-bottom: 10px;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s ease;
+position: relative;
+}
+.order-card:hover {
+transform: translateX(-3px);
+box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.order-card.active {
+border-right: 3px solid #b31b1b;
+background-color: #fff5f5;
+}
+.order-card-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.order-card-title {
+font-weight: bold;
+color: #004085;
+font-size: 13px;
+flex: 1;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.btn-delete-order {
+background: #dc3545;
+color: white;
+border: none;
+padding: 2px 6px;
+border-radius: 4px;
+cursor: pointer;
+font-size: 12px;
+margin-left: 5px;
+}
+.btn-delete-order:hover { background: #bd2130; }
+
+.order-card-meta {
+font-size: 11px;
+color: #666;
+margin-top: 6px;
+display: flex;
+justify-content: space-between;
+}
+
+.invoice-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+border-bottom: 3px solid #b31b1b;
+padding-bottom: 12px;
+margin-bottom: 20px;
+}
+.logo-area {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.logo-box {
+width: 60px;
+height: 60px;
+background: #b31b1b;
+color: white;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+overflow: hidden;
+border: 2px solid #fff;
+box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+.logo-box img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+.company-title {
+font-size: 18px;
+font-weight: 800;
+color: #b31b1b;
+text-transform: uppercase;
+}
+
+.project-meta-grid {
+display: grid;
+grid-template-columns: 180px 1fr;
+gap: 20px;
+margin-bottom: 20px;
+}
+.photo-box {
+width: 180px;
+height: 180px;
+border: 2px dashed #b31b1b;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: center;
+cursor: pointer;
+background-color: #fff9f9;
+overflow: hidden;
+}
+.photo-box img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.meta-fields {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+.field-group {
+display: flex;
+flex-direction: column;
+}
+.field-group.full-width { grid-column: span 2; }
+.field-group label {
+font-size: 10px;
+font-weight: 700;
+color: #b31b1b;
+text-transform: uppercase;
+}
+
+input[type="text"], input[type="number"] {
+color: #004085 !important;
+font-weight: 700;
+padding: 6px 8px;
+border: 1px solid #ccc;
+border-radius: 4px;
+font-size: 13px;
+background: #fff;
+}
+
+.section-title {
+background: #b31b1b;
+color: #fff;
+padding: 5px 10px;
+font-size: 11px;
+font-weight: bold;
+text-transform: uppercase;
+margin-top: 15px;
+margin-bottom: 8px;
+border-radius: 3px;
+}
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 12px; }
+th { background-color: #fff0f0; color: #b31b1b; font-size: 10px; text-transform: uppercase; }
+
+table input {
+width: 100%;
+border: 1px solid transparent;
+background: transparent;
+color: #004085 !important;
+font-weight: 700;
+}
+
+.summary-box {
+margin-top: 15px;
+background: #fff9f9;
+padding: 12px;
+border: 1px solid #ffcccc;
+border-radius: 5px;
+}
+.summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; font-weight: bold; color:#333; }
+.green-num { color: #28a745 !important; font-weight: 800; }
+.summary-row.final {
+border-top: 2px solid #b31b1b;
+margin-top: 6px;
+padding-top: 8px;
+font-size: 16px;
+}
+
+.actions-panel {
+display: flex;
+gap: 10px;
+justify-content: flex-end;
+margin-top: 20px;
+}
+.btn {
+padding: 8px 16px;
+border: none;
+border-radius: 4px;
+font-weight: bold;
+cursor: pointer;
+font-size: 12px;
+}
+.btn-save { background: #28a745; color: white; }
+.btn-pdf { background: #004085; color: white; }
+.btn-new { background: #b31b1b; color: white; }
+
+@media print {
+body { background: white; padding: 0; }
+.sidebar, .actions-panel { display: none !important; }
+.paper-container { border: none; box-shadow: none; width: 100%; }
+}
+</style>
+  <link rel="stylesheet" href="../cc-exact-pages.css">
+</head>
+<body class="cc-page cc-project">
+
+<div class="main-layout">
+<div class="paper-container">
+
+<div class="invoice-header">
+<div class="logo-area">
+<div class="logo-box" onclick="document.getElementById('logoInput').click()" title="Kliko për të ngarkuar logon">
+<img id="logoImg" style="display:none;" />
+<span id="logoText" style="font-weight: bold; font-size: 20px;">CC</span>
+<input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+</div>
+<div>
+<div class="company-title">Cuffi Creates Studio</div>
+<div style="font-size: 11px; color: #666;">Studio Tufting & Punime me Dorë</div>
+</div>
+</div>
+<div style="text-align: right;">
+<div style="font-size: 16px; font-weight: bold; color: #b31b1b;">FLETA E PROJEKTIT</div>
+<div id="displayDate" style="font-size: 11px; color: #666;"></div>
+</div>
+</div>
+
+<div class="project-meta-grid">
+<div class="photo-box" onclick="document.getElementById('imageInput').click()">
+<span id="uploadText" style="font-size: 10px; color: #b31b1b; font-weight: bold;">📷 NGARKO FOTON E PRODUKTIT</span>
+<img id="projectImg" style="display:none;" />
+<input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleProductUpload(event)">
+</div>
+
+<div class="meta-fields">
+<div class="field-group full-width">
+<label>Emri i Projektit / Porosisë:</label>
+<input type="text" id="projectName" value="Qilim 'Abstraction'" oninput="calculate()">
+</div>
+<div class="field-group">
+<label>Kodi i Projektit:</label>
+<input type="text" id="projectCode" value="#TUF-2026-01">
+</div>
+<div class="field-group">
+<label>Përmasat (cm):</label>
+<input type="text" id="projectDimensions" value="80 cm x 120 cm">
+</div>
+<div class="field-group">
+<label>Data e Fillimit:</label>
+<input type="text" id="startDate" value="04/08/2026">
+</div>
+<div class="field-group">
+<label>Data e Përfundimit:</label>
+<input type="text" id="endDate" value="06/08/2026">
+</div>
+</div>
+</div>
+<button type="button" onclick="addMaterialRow()" style="background: #22c55e; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;">
++ Shto Ngjyrë Tjetër
+</button>
+
+<div class="section-title">1. Materialet & Paleta e Ngjyrave</div>
+<table>
+<thead>
+<tr>
+<th style="width: 15%;">Kod</th>
+<th>Emri i Ngjyrës / Materialit</th>
+<th>Lloji i Fijes</th>
+<th style="width: 15%;">Sasia (g)</th>
+<th style="width: 15%;">Kosto (€)</th>
+</tr>
+</thead>
+<tbody>
+<!-- Rreshti 1 -->
+<tr>
+<td><input type="text" value="Y-01" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#ffd700" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" value="E Verdhë Dielli" class="input-field">
+</div>
+</td>
+<td><input type="text" value="100% Lesh" class="input-field"></td>
+<td><input type="number" value="450" class="input-field"></td>
+<td><input type="number" value="13.50" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 2 -->
+<tr>
+<td><input type="text" value="B-04" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#ffffff" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" value="E Bardhë Borë" class="input-field">
+</div>
+</td>
+<td><input type="text" value="Akrilik Premium" class="input-field"></td>
+<td><input type="number" value="300" class="input-field"></td>
+<td><input type="number" value="6.00" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 3 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#ef4444" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 3" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 4 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#3b82f6" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 4" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 5 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#10b981" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 5" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 6 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#a855f7" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 6" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 7 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#f97316" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 7" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 8 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#ec4899" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 8" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 9 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#06b6d4" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 9" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+
+<!-- Rreshti 10 -->
+<tr>
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#64748b" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Ngjyra 10" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia" class="input-field"></td>
+<td><input type="number" placeholder="Kosto" class="input-field"></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">2. Pëlhura Bazë & Ngjitësi</div>
+<table>
+<thead>
+<tr>
+<th>Përshkrimi i Materialit</th>
+<th style="width: 30%;">Sasia / Përmasat</th>
+<th style="width: 20%;">Kosto (€)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><input type="text" id="b1_desc" value="Copa Tufting (Primary Tufting Cloth)"></td>
+<td><input type="text" id="b1_size" value="100 x 100 cm"></td>
+<td><input type="number" id="b1_cost" class="base-cost" value="7.00" step="0.01" oninput="calculate()"></td>
+</tr>
+<tr>
+<td><input type="text" id="b2_desc" value="Ngjitësi 5 kg (Latex / Glue)"></td>
+<td><input type="text" id="b2_size" value="800 g"></td>
+<td><input type="number" id="b2_cost" class="base-cost" value="9.50" step="0.01" oninput="calculate()"></td>
+</tr>
+<td><input type="text" id="b1_desc" value="Copa Tufting (ANTIRRUC)"></td>
+<td><input type="text" id="b1_size" value="100 x 100 cm"></td>
+<td><input type="number" id="b1_cost" class="base-cost" value="7.00" step="0.01" oninput="calculate()"></td>
+</tr>
+<td><input type="text" id="b1_desc" value="Ngjitesi Spray 500 ml"></td>
+<td><input type="text" id="b1_size" value="200 ml"></td>
+<td><input type="number" id="b1_cost" class="base-cost" value="7.00" step="0.01" oninput="calculate()"></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">3. Koha & Fitimi</div>
+<div style="display: flex; gap: 15px; margin-top: 8px;">
+<div class="field-group" style="flex:1;">
+<label>Orë Pune (Gjithsej):</label>
+<input type="number" id="totalHoursInput" value="8.5" step="0.5" oninput="calculate()">
+</div>
+<div class="field-group" style="flex:1;">
+<label>Pagesa (€/orë):</label>
+<input type="number" id="hourlyRate" value="10.00" step="0.5" oninput="calculate()">
+</div>
+<div class="field-group" style="flex:1;">
+<label>Fitimi (%):</label>
+<input type="number" id="profitMargin" value="30" oninput="calculate()">
+</div>
+</div>
+
+<div class="summary-box">
+<div class="summary-row">
+<span>Kosto Materialesh:</span>
+<strong id="lblMaterialCost" class="green-num">0.00 €</strong>
+</div>
+<div class="summary-row">
+<span>Kosto Pune:</span>
+<strong id="lblLaborCost" class="green-num">0.00 €</strong>
+</div>
+<div class="summary-row final">
+<span>ÇMIMI PËRFUNDIMTAR:</span>
+<span id="lblFinalPrice" class="green-num" style="font-size: 18px;">0.00 €</span>
+</div>
+</div>
+
+<div class="actions-panel">
+<button class="btn btn-save" onclick="saveCurrentOrder()">💾 Ruaj Si Porosi Të Re</button>
+<button class="btn btn-pdf" onclick="window.print()">🖨️ Printo / Faturë</button>
+</div>
+</div>
+
+<div class="sidebar">
+<div class="sidebar-header">📌 Porositë e Ruajtura</div>
+
+<div class="nav-controls">
+<button class="nav-btn" id="btnPrev" onclick="navigateOrders(-1)">← Mbrapa</button>
+<span id="navInfo" style="font-size: 12px; font-weight: bold; color: #004085; flex: 1; text-align: center;">E Re</span>
+<button class="nav-btn" id="btnNext" onclick="navigateOrders(1)">Para →</button>
+</div>
+
+<button class="btn btn-new" style="width: 100%; margin-bottom: 15px;" onclick="createNewOrder()">➕ KRIJO POROSI TË RE</button>
+
+<div id="ordersList"></div>
+</div>
+</div>
+
+<script>
+let currentLogoBase64 = "";
+let currentProductBase64 = "";
+let savedOrders = [];
+let currentOrderIndex = -1;
+
+const stripeColors = ['#28a745', '#007bff', '#6f42c1', '#fd7e14', '#e83e8c', '#17a2b8'];
+document.getElementById('displayDate').innerText = "Data: " + new Date().toLocaleDateString('sq-AL');
+
+function compressImage(file, maxWidth, maxHeight, quality, callback) {
+const reader = new FileReader();
+reader.onload = function(e) {
+const img = new Image();
+img.onload = function() {
+let width = img.width;
+let height = img.height;
+
+if (width > height) {
+if (width > maxWidth) {
+height = Math.round((height * maxWidth) / width);
+width = maxWidth;
+}
+} else {
+if (height > maxHeight) {
+width = Math.round((width * maxHeight) / height);
+height = maxHeight;
+}
+}
+
+const canvas = document.createElement('canvas');
+canvas.width = width;
+canvas.height = height;
+
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, width, height);
+
+const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+callback(compressedBase64);
+};
+img.src = e.target.result;
+};
+reader.readAsDataURL(file);
+}
+
+function handleLogoUpload(e) {
+const file = e.target.files[0];
+if (!file) return;
+compressImage(file, 200, 200, 0.8, function(base64) {
+currentLogoBase64 = base64;
+renderLogo(currentLogoBase64);
+localStorage.setItem('cuffi_studio_logo', currentLogoBase64);
+});
+}
+
+function renderLogo(src) {
+const img = document.getElementById('logoImg');
+const txt = document.getElementById('logoText');
+if (src) { img.src = src; img.style.display = 'block'; txt.style.display = 'none'; }
+}
+
+function handleProductUpload(e) {
+const file = e.target.files[0];
+if (!file) return;
+
+compressImage(file, 500, 500, 0.6, function(base64) {
+currentProductBase64 = base64;
+renderProductPhoto(currentProductBase64);
+});
+}
+
+function renderProductPhoto(src) {
+const img = document.getElementById('projectImg');
+const txt = document.getElementById('uploadText');
+if (src && src.trim() !== "") {
+img.src = src; img.style.display = 'block'; txt.style.display = 'none';
+} else {
+img.src = ''; img.style.display = 'none'; txt.style.display = 'block';
+}
+}
+
+function calculate() {
+let matCost = 0;
+document.querySelectorAll('.yarn-cost, .base-cost').forEach(i => matCost += parseFloat(i.value) || 0);
+
+const hours = parseFloat(document.getElementById('totalHoursInput').value) || 0;
+const rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+const laborCost = hours * rate;
+
+const totalCost = matCost + laborCost;
+const margin = parseFloat(document.getElementById('profitMargin').value) || 0;
+const finalPrice = totalCost + (totalCost * (margin / 100));
+
+document.getElementById('lblMaterialCost').innerText = matCost.toFixed(2) + " €";
+document.getElementById('lblLaborCost').innerText = laborCost.toFixed(2) + " €";
+document.getElementById('lblFinalPrice').innerText = finalPrice.toFixed(2) + " €";
+
+return { matCost, laborCost, finalPrice };
+}
+
+const fieldIDs = [
+'projectName', 'projectCode', 'projectDimensions', 'startDate', 'endDate',
+'m1_code', 'm1_name', 'm1_type', 'm1_qty', 'm1_cost',
+'m2_code', 'm2_name', 'm2_type', 'm2_qty', 'm2_cost',
+'b1_desc', 'b1_size', 'b1_cost',
+'b2_desc', 'b2_size', 'b2_cost',
+'totalHoursInput', 'hourlyRate', 'profitMargin'
+];
+
+function saveCurrentOrder() {
+const name = document.getElementById('projectName').value || "Porosi e Re";
+const calc = calculate();
+
+const formData = {};
+fieldIDs.forEach(id => {
+const el = document.getElementById(id);
+if (el) formData[id] = el.value;
+});
+
+const newOrder = {
+id: 'ord_' + Date.now(),
+name: name,
+date: new Date().toLocaleDateString('sq-AL'),
+price: calc.finalPrice.toFixed(2) + " €",
+data: formData,
+photo: currentProductBase64
+};
+
+savedOrders.push(newOrder);
+currentOrderIndex = savedOrders.length - 1;
+
+try {
+localStorage.setItem('cuffi_studio_orders', JSON.stringify(savedOrders));
+renderSidebar();
+updateNavInfo();
+alert('✅ Porosia u shtua me sukses në listë!');
+} catch (e) {
+alert('⚠️ Memoria e shfletuesit është plot. Provoni të fshini ndonjë porosi të vjetër.');
+}
+}
+
+function deleteOrder(index, event) {
+event.stopPropagation();
+if (confirm("Jeni i sigurt që dëshironi ta fshini këtë porosi?")) {
+savedOrders.splice(index, 1);
+localStorage.setItem('cuffi_studio_orders', JSON.stringify(savedOrders));
+
+if (savedOrders.length > 0) {
+loadOrder(Math.max(0, index - 1));
+} else {
+createNewOrder();
+}
+}
+}
+
+function renderSidebar() {
+const container = document.getElementById('ordersList');
+if (savedOrders.length === 0) {
+container.innerHTML = '<p style="font-size:11px; color:#777; text-align:center;">Nuk ka porosi të ruajtura.</p>';
+return;
+}
+
+let html = '';
+savedOrders.forEach((ord, idx) => {
+const color = stripeColors[idx % stripeColors.length];
+const activeClass = idx === currentOrderIndex ? 'active' : '';
+html += `
+<div class="order-card ${activeClass}" style="border-left-color: ${color};" onclick="loadOrder(${idx})">
+<div class="order-card-header">
+<div class="order-card-title">📌 ${ord.name}</div>
+<button class="btn-delete-order" onclick="deleteOrder(${idx}, event)" title="Fshi porosinë">🗑️</button>
+</div>
+<div class="order-card-meta">
+<span>📅 ${ord.date}</span>
+<strong style="color:#28a745;">${ord.price}</strong>
+</div>
+</div>
+`;
+});
+container.innerHTML = html;
+}
+
+function navigateOrders(direction) {
+if (savedOrders.length === 0) return;
+let newIndex = currentOrderIndex + direction;
+if (newIndex >= 0 && newIndex < savedOrders.length) {
+loadOrder(newIndex);
+}
+}
+
+function loadOrder(index) {
+currentOrderIndex = index;
+const ord = savedOrders[index];
+
+if (ord && ord.data) {
+fieldIDs.forEach(id => {
+const el = document.getElementById(id);
+if (el && ord.data[id] !== undefined) {
+el.value = ord.data[id];
+}
+});
+}
+
+currentProductBase64 = ord ? (ord.photo || "") : "";
+renderProductPhoto(currentProductBase64);
+
+calculate();
+renderSidebar();
+updateNavInfo();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function createNewOrder() {
+currentOrderIndex = -1;
+currentProductBase64 = "";
+renderProductPhoto("");
+
+document.getElementById('projectName').value = "Porosi e Re";
+document.getElementById('projectCode').value = "#TUF-" + Math.floor(Math.random()*1000);
+document.getElementById('projectDimensions').value = "";
+
+calculate();
+renderSidebar();
+updateNavInfo();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNavInfo() {
+const info = document.getElementById('navInfo');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+
+if (currentOrderIndex >= 0 && savedOrders.length > 0) {
+info.innerText = `Porosia ${currentOrderIndex + 1} / ${savedOrders.length}`;
+btnPrev.disabled = currentOrderIndex === 0;
+btnNext.disabled = currentOrderIndex === savedOrders.length - 1;
+} else {
+info.innerText = "Porosi e Re";
+btnPrev.disabled = true;
+btnNext.disabled = true;
+}
+}
+
+window.onload = function() {
+const savedLogo = localStorage.getItem('cuffi_studio_logo');
+if (savedLogo) { currentLogoBase64 = savedLogo; renderLogo(savedLogo); }
+
+const localOrders = localStorage.getItem('cuffi_studio_orders');
+if (localOrders) {
+savedOrders = JSON.parse(localOrders);
+if (savedOrders.length > 0) loadOrder(savedOrders.length - 1);
+else createNewOrder();
+} else {
+createNewOrder();
+}
+};
+</script>
+<script>
+function addMaterialRow() {
+const tbody = document.querySelector("#materialsTable tbody"); // Sigurohu që <tbody> i tabelës ka id ose është brenda tabelës
+if (!tbody) return;
+
+const tr = document.createElement("tr");
+tr.innerHTML = `
+<td><input type="text" placeholder="Kodi" class="input-field"></td>
+<td>
+<div style="display: flex; align-items: center; gap: 8px;">
+<input type="color" value="#3b82f6" style="border:none; width:35px; height:35px; border-radius:50%; cursor:pointer; background:none;">
+<input type="text" placeholder="Emri i Ngjyrës" class="input-field">
+</div>
+</td>
+<td><input type="text" placeholder="Lloji i Fijes" class="input-field"></td>
+<td><input type="number" placeholder="Sasia (g)" class="input-field"></td>
+<td><input type="number" placeholder="Kosto (€)" class="input-field"></td>
+`;
+tbody.appendChild(tr);
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth <= 699) {
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.closest('.table-responsive')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-responsive';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim() || 'Fusha');
+      table.querySelectorAll('tbody tr').forEach(row => {
+        [...row.children].forEach((cell, i) => cell.setAttribute('data-label', headers[i] || 'Fusha'));
+      });
+    });
+  }
+});
+</script>
+
+<script src="../cc-page-ui.js"></script>
+</body>
+</html>
