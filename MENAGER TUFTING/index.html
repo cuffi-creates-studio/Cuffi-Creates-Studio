@@ -160,40 +160,8 @@ gap: 4px;
 .form-grid { grid-template-columns: 1fr; }
 .form-group.full-width { grid-column: span 1; }
 }
-
-/* ===== IMPORT PDF I VJETËR - shtesë e izoluar ===== */
-.pdf-import-card{
-  border:1px solid #c7d2fe;
-  background:#f5f7ff;
-}
-.pdf-import-note{
-  color:#4b5563;
-  font-size:13px;
-  line-height:1.55;
-  margin-bottom:12px;
-}
-.pdf-import-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-.btn-import-pdf{
-  border:none;
-  border-radius:8px;
-  padding:11px 16px;
-  background:#7c3aed;
-  color:white;
-  font-weight:800;
-  cursor:pointer;
-}
-.btn-import-pdf:disabled{opacity:.55;cursor:wait}
-.pdf-import-status{font-size:13px;color:#374151}
-@media(max-width:699px){
-  .btn-import-pdf{width:100%}
-}
-
 </style>
+  <link rel="stylesheet" href="../premium-module.css">
   <link rel="stylesheet" href="../cc-exact-pages.css">
 </head>
 <body class="cc-page cc-manager">
@@ -255,22 +223,6 @@ gap: 4px;
 </form>
 </div>
 
-
-<!-- IMPORT PDF I VJETËR: vetëm shton, nuk fshin -->
-<div class="card-box pdf-import-card">
-  <div class="card-title">📥 Importo projekt të vjetër nga PDF</div>
-  <div class="pdf-import-note">
-    Zgjidh raportin “TUFTING DESIGN BERICHT”. Programi e lexon dhe vetëm e shton te katalogu aktual.
-    Asnjë projekt ekzistues nuk fshihet.
-  </div>
-  <div class="pdf-import-row">
-    <button type="button" id="btnImportOldPdf" class="btn-import-pdf">Zgjidh PDF-të e vjetra</button>
-    <input type="file" id="oldPdfInput" accept=".pdf,application/pdf" multiple hidden>
-    <span id="pdfImportStatus" class="pdf-import-status"></span>
-  </div>
-</div>
-
-
 <!-- CATALOGUE / TABLE CARD -->
 <div class="card-box">
 <div class="card-title">📋 Katalogu i Projekteve</div>
@@ -296,15 +248,6 @@ gap: 4px;
 </div>
 
 </div>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
-</script>
 
 <script>
 let projects = JSON.parse(localStorage.getItem('myTuftingProjects')) || [];
@@ -466,244 +409,6 @@ renderProjects();
 </script>
 
 
-
-<script>
-(function(){
-  const btn = document.getElementById('btnImportOldPdf');
-  const input = document.getElementById('oldPdfInput');
-  const statusEl = document.getElementById('pdfImportStatus');
-  if(!btn || !input || !statusEl) return;
-
-  btn.addEventListener('click', () => input.click());
-
-  const norm = s => String(s ?? '')
-    .replace(/\u00a0/g,' ')
-    .replace(/\s+/g,' ')
-    .trim();
-
-  const num = s => norm(s).replace(',', '.').replace(/[^\d.]/g,'');
-
-  function field(text, regex){
-    const m = text.match(regex);
-    return m ? norm(m[1]) : '';
-  }
-
-  async function readPdfText(file){
-    if(!window.pdfjsLib){
-      throw new Error(
-        "Lexuesi PDF nuk u ngarkua. Ky version ka nevojë për internet gjatë importimit të PDF-së."
-      );
-    }
-
-    const data = new Uint8Array(await file.arrayBuffer());
-    const pdf = await pdfjsLib.getDocument({data}).promise;
-    const pages = [];
-
-    for(let p = 1; p <= pdf.numPages; p++){
-      const page = await pdf.getPage(p);
-      const tc = await page.getTextContent();
-
-      let pageText = '';
-      for(const item of tc.items){
-        if(!item || !item.str) continue;
-        pageText += item.str;
-        pageText += item.hasEOL ? '\n' : ' ';
-      }
-      pages.push(pageText);
-    }
-    return pages.join('\n');
-  }
-
-  function parseOldReport(file, rawText){
-    const text = norm(rawText);
-
-    // Raporti i vjetër që më dërgove ka këtë titull.
-    const isOldReport =
-      /TUFTING\s+DESIGN\s+BERICHT/i.test(text) ||
-      /Farb-\s*und\s*Materialtabelle/i.test(text) ||
-      /Garnverbrauch\s*:/i.test(text);
-
-    if(!isOldReport){
-      throw new Error(
-        `"${file.name}" nuk u njoh si raport Tufting i vjetër.`
-      );
-    }
-
-    const name =
-      field(text, /Projekt\s*:\s*(.+?)(?=\s+Datum\s*:|\s+Date\s*:)/i) ||
-      file.name.replace(/_Tufting_Bericht\.pdf$/i,'').replace(/\.pdf$/i,'');
-
-    const date = field(text, /Datum\s*:\s*(.+?)(?=\s+Teppichgr(?:ö|oe)ße\s*:|\s+Teppichgroesse\s*:)/i);
-    const size = field(text, /Teppichgr(?:ö|oe)ße\s*:\s*(.+?)(?=\s+Fl(?:ä|ae)che\s*:)/i);
-    const area = field(text, /Fl(?:ä|ae)che\s*:\s*(.+?)(?=\s+F(?:ä|ae)den\s+in\s+der\s+Pistole\s*:)/i);
-    const threads = field(text, /F(?:ä|ae)den\s+in\s+der\s+Pistole\s*:\s*(.+?)(?=\s+Garnverbrauch\s*:)/i);
-    const consumption = field(text, /Garnverbrauch\s*:\s*(\d+(?:[.,]\d+)?\s*g)/i)
-      || field(text, /Gesamtgarn\s*:\s*(\d+(?:[.,]\d+)?\s*g)/i);
-    const waste = field(text, /Verschnitt\s*:\s*(\d+(?:[.,]\d+)?\s*%)/i);
-    const materialCost = field(text, /Materialkosten\s*:\s*(\d+(?:[.,]\d+)?\s*€)/i);
-
-    // Lexon rreshtat si:
-    // 1 Medium Grey 58 7.7% 28 g 2.00 € 0.55 €
-    const rowRx =
-      /(\d{1,2})\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ \-]+?)\s+(\d{1,3})\s+(\d+(?:[.,]\d+)?)\s*%\s+(\d+(?:[.,]\d+)?)\s*g\s+(\d+(?:[.,]\d+)?)\s*€\s+(\d+(?:[.,]\d+)?)\s*€/gi;
-
-    const colors = [];
-    let m;
-    while((m = rowRx.exec(text)) !== null){
-      colors.push({
-        nr:m[1],
-        color:norm(m[2]),
-        code:m[3],
-        percent:m[4].replace(',','.'),
-        grams:m[5].replace(',','.'),
-        per100:m[6].replace(',','.'),
-        cost:m[7].replace(',','.')
-      });
-    }
-
-    // Ky PDF konkret ka 12 ngjyra; nuk e detyrojmë 12 për PDF-të e tjera.
-    if(!name || (!consumption && colors.length === 0)){
-      throw new Error(
-        `"${file.name}" u hap, por nuk u gjetën të dhënat kryesore të projektit.`
-      );
-    }
-
-    const details = [];
-    if(date) details.push(`Data: ${date}`);
-    if(size) details.push(`Madhësia: ${size}`);
-    if(area) details.push(`Sipërfaqja: ${area}`);
-    if(threads) details.push(`Fije në pistoletë: ${threads}`);
-    if(waste) details.push(`Verschnitt: ${waste}`);
-
-    if(colors.length){
-      if(details.length) details.push('');
-      details.push('Ngjyrat / Kodet:');
-      colors.forEach(c => {
-        details.push(
-          `${c.nr}. ${c.color} = Kodi ${c.code} | ${c.grams} g | ${c.percent}% | ${c.per100} €/100g | ${c.cost} €`
-        );
-      });
-    }
-
-    return {
-      project: {
-        name,
-        yarnType:'Tjetër',
-        details:details.join('\n'),
-        weight:num(consumption),
-        cost:num(materialCost),
-        price:'',
-        foto:''
-      },
-      colorCount:colors.length
-    };
-  }
-
-  function key(p){
-    return [
-      norm(p.name).toLowerCase(),
-      norm(p.weight),
-      norm(p.cost)
-    ].join('|');
-  }
-
-  async function importFiles(fileList){
-    const files = Array.from(fileList || []).filter(f => /\.pdf$/i.test(f.name));
-    if(!files.length) return;
-
-    btn.disabled = true;
-    statusEl.textContent = 'Po lexohet PDF...';
-
-    try{
-      const parsed = [];
-      const errors = [];
-
-      for(let i=0;i<files.length;i++){
-        const f = files[i];
-        statusEl.textContent = `Po lexohet ${i+1}/${files.length}: ${f.name}`;
-        try{
-          const raw = await readPdfText(f);
-          parsed.push(parseOldReport(f, raw));
-        }catch(err){
-          console.error(err);
-          errors.push(err.message || String(err));
-        }
-      }
-
-      if(!parsed.length){
-        alert(
-          "PDF-ja nuk u importua.\n\n" +
-          (errors.join('\n') || "Nuk u gjetën të dhëna të lexueshme.")
-        );
-        statusEl.textContent = 'Asnjë ndryshim nuk u bë.';
-        return;
-      }
-
-      const existing = new Set(projects.map(key));
-      const add = [];
-      let duplicates = 0;
-
-      parsed.forEach(result => {
-        const k = key(result.project);
-        if(existing.has(k)){
-          duplicates++;
-        }else{
-          existing.add(k);
-          add.push(result);
-        }
-      });
-
-      if(!add.length){
-        alert("Ky projekt duket se është tashmë në katalog. Asgjë nuk u ndryshua.");
-        statusEl.textContent = 'Asnjë ndryshim nuk u bë.';
-        return;
-      }
-
-      const preview = add.map(r =>
-        `• ${r.project.name} — ${r.project.weight || '?'} g — ${r.colorCount} ngjyra`
-      ).join('\n');
-
-      const ok = confirm(
-        `U njohën këto projekte:\n\n${preview}\n\n` +
-        `Do të SHTOHEN te katalogu. Asgjë ekzistuese nuk do të fshihet.\n\nVazhdo?`
-      );
-
-      if(!ok){
-        statusEl.textContent = 'Importi u anulua.';
-        return;
-      }
-
-      const next = projects.concat(add.map(r => r.project));
-
-      // Vetëm një shkrim te çelësi i Menager Tufting; pa clear dhe pa fshirje.
-      localStorage.setItem('myTuftingProjects', JSON.stringify(next));
-      projects = next;
-      renderProjects();
-
-      let msg = `U importuan ${add.length} projekt(e) me sukses.`;
-      if(duplicates) msg += ` ${duplicates} dublikatë u anashkaluan.`;
-      if(errors.length) msg += ` ${errors.length} PDF nuk u lexuan.`;
-
-      alert(msg);
-      statusEl.textContent = msg;
-    }catch(err){
-      console.error(err);
-      alert(
-        "Importi dështoi, por të dhënat ekzistuese nuk u prekën.\n\n" +
-        (err.message || String(err))
-      );
-      statusEl.textContent = 'Importi dështoi. Asgjë nuk u fshi.';
-    }finally{
-      btn.disabled = false;
-      input.value = '';
-    }
-  }
-
-  input.addEventListener('change', () => importFiles(input.files));
-})();
-</script>
-
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   if (window.innerWidth <= 699) {
@@ -723,6 +428,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<script src="../cc-page-ui.js"></script>
 </body>
 </html>
