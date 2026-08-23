@@ -23,13 +23,16 @@
       <h1 id="loginTitle">Hyr në sistem</h1>
       <p>Përdor të dhënat e tua për të hapur Studio OS.</p>
       <form id="loginForm" autocomplete="on">
-        <label>Përdoruesi
-          <span class="login-field"><i class="fa-regular fa-user"></i><input id="loginUsername" name="username" autocomplete="username" required placeholder="Shkruaj përdoruesin"></span>
+        <label>Email
+          <span class="login-field"><i class="fa-regular fa-envelope"></i><input id="loginUsername" name="email" type="email" autocomplete="username" required placeholder="Shkruaj email-in"></span>
         </label>
         <label>Fjalëkalimi
           <span class="login-field"><i class="fa-solid fa-lock"></i><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Shkruaj fjalëkalimin"><button type="button" id="togglePassword" aria-label="Shfaq ose fshih fjalëkalimin"><i class="fa-regular fa-eye"></i></button></span>
         </label>
-        <label class="remember-row"><input id="rememberLogin" type="checkbox"> <span>Më mbaj të kyçur</span></label>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <label class="remember-row" style="margin:0"><input id="rememberLogin" type="checkbox"> <span>Më mbaj të kyçur</span></label>
+          <button type="button" id="forgotPassword" style="border:0;background:transparent;color:#cf66ff;font-weight:700;cursor:pointer;padding:4px 0">Harrove fjalëkalimin?</button>
+        </div>
         <div id="loginError" class="login-error" role="alert"></div>
         <button class="login-submit" type="submit"><i class="fa-solid fa-right-to-bracket"></i> HYR TANI</button>
       </form>
@@ -306,6 +309,17 @@
     </main>
   </div>
 
+  <dialog id="resetPasswordDialog" class="modal">
+    <form method="dialog" id="resetPasswordForm">
+      <div class="modal-head"><h3>Vendos fjalëkalimin e ri</h3><button value="cancel" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="modal-info">Shkruaj fjalëkalimin e ri për llogarinë tënde.</p>
+      <label>Fjalëkalimi i ri<input id="newPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="Minimumi 6 karaktere"></label>
+      <label>Përsërite fjalëkalimin<input id="confirmNewPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="Shkruaje përsëri"></label>
+      <div id="resetPasswordError" class="login-error" role="alert"></div>
+      <div class="modal-actions"><button value="cancel" class="secondary-btn">Anulo</button><button value="default" class="primary-btn" id="saveNewPassword">Ruaj fjalëkalimin</button></div>
+    </form>
+  </dialog>
+
   <dialog id="eventDialog" class="modal">
     <form method="dialog" id="eventForm">
       <div class="modal-head"><h3>Shto termin</h3><button value="cancel"><i class="fa-solid fa-xmark"></i></button></div>
@@ -331,6 +345,7 @@
 
   <dialog id="imageDialog" class="image-modal"><button id="closeImage"><i class="fa-solid fa-xmark"></i></button><img id="largeImage" alt="Foto e galerisë"><div id="imageCaption"></div></dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
   <script src="mobile-ui.js"></script>
 

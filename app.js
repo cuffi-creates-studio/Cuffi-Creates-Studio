@@ -30,8 +30,9 @@ const storage = {
   set(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 };
 
-const AUTH_USER = "cuffi";
-const AUTH_PASS = "11asdrosagzimi";
+const SUPABASE_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
 
 
@@ -651,39 +652,121 @@ function initSettings() {
   };
 }
 
-function initAuth() {
+async function initAuth() {
   const overlay = $('#loginOverlay');
-  const remembered = localStorage.getItem('cc_auth') === 'true';
-  const session = sessionStorage.getItem('cc_auth') === 'true';
-  if (remembered || session) { overlay.classList.add('is-hidden'); return; }
-  overlay.classList.remove('is-hidden');
-  setTimeout(() => $('#loginUsername')?.focus(), 80);
+  const emailInput = $('#loginUsername');
+  const passwordInput = $('#loginPassword');
+  const errorBox = $('#loginError');
+
+  const showLogin = () => {
+    overlay.classList.remove('is-hidden');
+    setTimeout(() => emailInput?.focus(), 80);
+  };
+
+  const hideLogin = () => {
+    overlay.classList.add('is-hidden');
+    passwordInput.value = '';
+    errorBox.textContent = '';
+  };
+
   $('#togglePassword').onclick = () => {
-    const input = $('#loginPassword');
-    const show = input.type === 'password';
-    input.type = show ? 'text' : 'password';
+    const show = passwordInput.type === 'password';
+    passwordInput.type = show ? 'text' : 'password';
     $('#togglePassword i').className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
   };
-  $('#loginForm').addEventListener('submit', event => {
+
+  $('#loginForm').addEventListener('submit', async event => {
     event.preventDefault();
-    const user = $('#loginUsername').value.trim();
-    const pass = $('#loginPassword').value;
-    if (user === AUTH_USER && pass === AUTH_PASS) {
-      $('#loginError').textContent = '';
-      if ($('#rememberLogin').checked) localStorage.setItem('cc_auth', 'true');
-      else sessionStorage.setItem('cc_auth', 'true');
-      overlay.classList.add('is-hidden');
-      $('#loginPassword').value = '';
-    } else {
-      $('#loginError').textContent = 'Përdoruesi ose fjalëkalimi është gabim.';
-      $('#loginPassword').select();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    errorBox.textContent = 'Duke hyrë...';
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      errorBox.textContent = error.message === 'Invalid login credentials'
+        ? 'Email-i ose fjalëkalimi është gabim.'
+        : `Nuk u krye hyrja: ${error.message}`;
+      passwordInput.select();
+      return;
     }
+
+    errorBox.textContent = '';
+    hideLogin();
+  });
+
+  $('#forgotPassword').onclick = async () => {
+    const email = emailInput.value.trim();
+    if (!email) {
+      errorBox.textContent = 'Shkruaj email-in tënd më sipër dhe provo përsëri.';
+      emailInput.focus();
+      return;
+    }
+
+    errorBox.textContent = 'Po dërgohet email-i...';
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (error) {
+      errorBox.textContent = `Email-i nuk u dërgua: ${error.message}`;
+      return;
+    }
+
+    errorBox.textContent = '';
+    showToast('Email-i u dërgua', 'Kontrollo email-in dhe kliko lidhjen për të vendosur fjalëkalimin e ri.');
+  };
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) hideLogin();
+  else showLogin();
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) hideLogin();
+    if (event === 'SIGNED_OUT') showLogin();
+
+    if (event === 'PASSWORD_RECOVERY') {
+      hideLogin();
+      setTimeout(() => {
+        $('#newPassword').value = '';
+        $('#confirmNewPassword').value = '';
+        $('#resetPasswordError').textContent = '';
+        $('#resetPasswordDialog').showModal();
+        $('#newPassword').focus();
+      }, 50);
+    }
+  });
+
+  $('#resetPasswordForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const password = $('#newPassword').value;
+    const confirmPassword = $('#confirmNewPassword').value;
+    const resetError = $('#resetPasswordError');
+
+    if (password.length < 6) {
+      resetError.textContent = 'Fjalëkalimi duhet të ketë të paktën 6 karaktere.';
+      return;
+    }
+    if (password !== confirmPassword) {
+      resetError.textContent = 'Fjalëkalimet nuk përputhen.';
+      return;
+    }
+
+    resetError.textContent = 'Duke ruajtur...';
+    const { error } = await supabaseClient.auth.updateUser({ password });
+
+    if (error) {
+      resetError.textContent = `Nuk u ruajt: ${error.message}`;
+      return;
+    }
+
+    resetError.textContent = '';
+    $('#resetPasswordDialog').close();
+    showToast('Fjalëkalimi u ndryshua', 'Tani mund të përdorësh fjalëkalimin e ri.');
   });
 }
 
-function logout() {
-  localStorage.removeItem('cc_auth');
-  sessionStorage.removeItem('cc_auth');
+async function logout() {
+  await supabaseClient.auth.signOut();
   setView('dashboard');
   $('#loginOverlay').classList.remove('is-hidden');
   $('#loginUsername').value = '';
