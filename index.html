@@ -21,7 +21,7 @@
 </head>
 <body>
 
-  <section id="loginOverlay" class="login-overlay is-hidden" aria-labelledby="loginTitle" aria-busy="true">
+  <section id="loginOverlay" class="login-overlay" aria-labelledby="loginTitle">
     <div class="login-card">
       <div class="login-logo-wrap">
         <img src="./images/CuffiCreatesNeon1.png" alt="Cuffi Creates Logo">
@@ -37,7 +37,7 @@
           <span class="login-field"><i class="fa-solid fa-lock"></i><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Shkruaj fjalëkalimin"><button type="button" id="togglePassword" aria-label="Shfaq ose fshih fjalëkalimin"><i class="fa-regular fa-eye"></i></button></span>
         </label>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <label class="remember-row" style="margin:0"><input id="rememberLogin" type="checkbox" checked> <span>Më mbaj të kyçur</span></label>
+          <label class="remember-row" style="margin:0"><input id="rememberLogin" type="checkbox"> <span>Më mbaj të kyçur</span></label>
           <button type="button" id="forgotPassword" style="border:0;background:transparent;color:#cf66ff;font-weight:700;cursor:pointer;padding:4px 0">Harrove fjalëkalimin?</button>
         </div>
         <div id="loginError" class="login-error" role="alert"></div>
@@ -342,12 +342,12 @@
   </dialog>
 
   <dialog id="workDialog" class="modal">
-    <form id="workForm">
-      <div class="modal-head"><h3>Ruaj orët e punës</h3><button type="button" id="closeWorkDialog" aria-label="Mbyll"><i class="fa-solid fa-xmark"></i></button></div>
+    <form method="dialog" id="workForm">
+      <div class="modal-head"><h3>Ruaj orët e punës</h3><button value="cancel"><i class="fa-solid fa-xmark"></i></button></div>
       <p class="modal-info">Seanca u ndal. Shto një përshkrim të shkurtër për punën e bërë.</p>
       <label>Përshkrimi<input id="workDescription" placeholder="p.sh. Projekt tufting, përgatitje materialesh"></label>
       <div class="work-session-preview" id="workSessionPreview"></div>
-      <div class="modal-actions"><button type="button" class="secondary-btn" id="discardWorkSession">Mos e ruaj</button><button type="submit" class="primary-btn" id="saveWorkSession">Ruaj seancën</button></div>
+      <div class="modal-actions"><button value="cancel" class="secondary-btn" id="discardWorkSession">Mos e ruaj</button><button value="default" class="primary-btn" id="saveWorkSession">Ruaj seancën</button></div>
     </form>
   </dialog>
 
