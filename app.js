@@ -926,11 +926,26 @@ function initAuth() {
     input.type = show ? 'text' : 'password';
     $('#togglePassword i').className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
   };
-  $('#loginForm').addEventListener('submit', event => {
+  $('#loginForm').addEventListener('submit', async event => {
     event.preventDefault();
     const user = $('#loginUsername').value.trim();
     const pass = $('#loginPassword').value;
+
     if (user === AUTH_USER && pass === AUTH_PASS) {
+      $('#loginError').textContent = 'Po lidhet me cloud...';
+
+      const cloudResult = typeof window.cuffiSupabaseSignIn === 'function'
+        ? await window.cuffiSupabaseSignIn("gezimtahiri1@web.de", pass)
+        : { ok:false, error:'Supabase nuk është ngarkuar ende.' };
+
+      if (!cloudResult.ok) {
+        $('#loginError').textContent =
+          'Login-i lokal është i saktë, por Supabase Auth nuk u lidh. ' +
+          'Kontrollo që fjalëkalimi i këtij user-i në Supabase të jetë i njëjtë me fjalëkalimin që po përdor këtu.';
+        $('#loginPassword').select();
+        return;
+      }
+
       $('#loginError').textContent = '';
       if ($('#rememberLogin').checked) localStorage.setItem('cc_auth', 'true');
       else sessionStorage.setItem('cc_auth', 'true');
@@ -1129,6 +1144,23 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
     clearInterval(pullTimer);
     pullTimer = setInterval(pullCloud, 5000);
   }
+
+  window.cuffiSupabaseSignIn = async function(email, password) {
+    try {
+      await loadSupabase();
+      if (!client) {
+        client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
+        });
+      }
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) return { ok:false, error:error.message };
+      if (data?.session?.user) await startWithSession(data.session);
+      return { ok:true };
+    } catch (e) {
+      return { ok:false, error:e?.message || String(e) };
+    }
+  };
 
   async function initCloud() {
     try {
