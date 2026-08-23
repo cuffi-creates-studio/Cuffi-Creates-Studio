@@ -939,11 +939,9 @@ function initAuth() {
         : { ok:false, error:'Supabase nuk është ngarkuar ende.' };
 
       if (!cloudResult.ok) {
-        $('#loginError').textContent =
-          'Login-i lokal është i saktë, por Supabase Auth nuk u lidh. ' +
-          'Kontrollo që fjalëkalimi i këtij user-i në Supabase të jetë i njëjtë me fjalëkalimin që po përdor këtu.';
-        $('#loginPassword').select();
-        return;
+        // Mos e blloko hyrjen në aplikacion nëse Supabase nuk lidhet.
+        // Login-i lokal vazhdon normalisht; cloud sync thjesht mbetet joaktiv.
+        console.warn('Supabase Auth nuk u lidh:', cloudResult.error);
       }
 
       $('#loginError').textContent = '';
