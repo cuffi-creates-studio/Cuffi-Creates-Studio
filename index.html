@@ -18,6 +18,20 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="mobile-premium.css" />
   <link rel="stylesheet" href="cc-internal-views.css">
+
+<style id="hide-only-bottom-ghost-buttons">
+/* Heq vetëm butonat fantazmë që mund të dalin jashtë navigimit.
+   Butonat normalë në sidebar / dashboard nuk preken. */
+body > button[data-view="gallery"],
+body > button[data-view="backup"],
+body > button[data-view="settings"],
+.app-shell > button[data-view="gallery"],
+.app-shell > button[data-view="backup"],
+.app-shell > button[data-view="settings"] {
+  display: none !important;
+}
+</style>
+
 </head>
 <body>
 
