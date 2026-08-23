@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CUFFI CREATES - Invoice & Order Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg-body: #eb7dd3;
+--card-bg: #ffffff;
+--text-main: #0f172a;
+--text-muted: #222830;
+--border-color: #e2e8f0;
+--primary: #2563eb;
+--primary-hover: #1d4ed8;
+--success: #10b981;
+--warning: #f59e0b;
+--danger: #ef4444;
+--accent-bg: #f1f5f9;
+--radius-lg: 16px;
+--radius-md: 10px;
+--radius-sm: 6px;
+--shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+body { background-color: var(--bg-body); color: var(--text-main); padding: 30px 15px; line-height: 1.5; }
+
+.container { max-width: 1100px; margin: auto; }
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+flex-wrap: wrap;
+gap: 15px;
+}
+.header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); }
+.header p { color: var(--text-muted); font-size: 14px; }
+
+.tabs {
+display: flex;
+gap: 10px;
+margin-bottom: 25px;
+border-bottom: 2px solid var(--border-color);
+padding-bottom: 10px;
+}
+.tab-btn {
+padding: 8px 18px;
+border: none;
+background: transparent;
+font-size: 14px;
+font-weight: 700;
+color: var(--text-muted);
+cursor: pointer;
+border-radius: var(--radius-sm);
+transition: 0.2s;
+}
+.tab-btn.active {
+background: var(--primary);
+color: #fff;
+}
+
+.card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: var(--radius-lg);
+padding: 28px;
+margin-bottom: 30px;
+box-shadow: var(--shadow);
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+.form-group.full { grid-column: span 2; }
+label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+input, select, textarea {
+width: 100%;
+padding: 10px 12px;
+border-radius: var(--radius-sm);
+border: 1px solid var(--border-color);
+background: #fff;
+font-size: 14px;
+color: var(--text-main);
+outline: none;
+transition: 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn {
+padding: 10px 18px;
+border: none;
+border-radius: var(--radius-sm);
+font-size: 13px;
+font-weight: 700;
+cursor: pointer;
+transition: 0.2s;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 6px;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-secondary { background: var(--accent-bg); color: var(--text-main); }
+.btn-danger { background: var(--danger); color: #fff; padding: 5px 8px; }
+
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+th {
+background: var(--accent-bg);
+color: var(--text-muted);
+font-size: 12px;
+font-weight: 700;
+text-transform: uppercase;
+padding: 12px 10px;
+}
+td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+
+.badge {
+padding: 4px 10px;
+border-radius: 20px;
+font-size: 11px;
+font-weight: 700;
+display: inline-block;
+}
+.st-vizatim { background: #e0f2fe; color: #0369a1; }
+.st-tufting { background: #fef3c7; color: #b45309; }
+.st-carving { background: #fae8ff; color: #86198f; }
+.st-gati { background: #dcfce7; color: #15803d; }
+.st-dorezuar { background: #f1f5f9; color: #475569; }
+
+/* INVOICE PREVIEW STYLES */
+.invoice-box {
+background: #fff;
+border: 1px solid var(--border-color);
+padding: 35px;
+border-radius: var(--radius-lg);
+max-width: 800px;
+margin: 0 auto;
+}
+.inv-header {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+border-bottom: 2px solid var(--border-color);
+padding-bottom: 20px;
+margin-bottom: 25px;
+}
+.inv-logo { font-size: 22px; font-weight: 900; color: var(--primary); }
+.inv-details { text-align: right; font-size: 13px; color: var(--text-muted); }
+
+.inv-status-tracker {
+display: flex;
+justify-content: space-between;
+margin: 25px 0;
+position: relative;
+}
+.step {
+flex: 1;
+text-align: center;
+position: relative;
+z-index: 1;
+}
+.step .icon {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+background: #e2e8f0;
+color: #64748b;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 8px auto;
+font-weight: bold;
+font-size: 13px;
+}
+.step.active .icon { background: var(--primary); color: #fff; }
+.step.completed .icon { background: var(--success); color: #fff; }
+.step span { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+
+.inv-summary {
+background: var(--accent-bg);
+border-radius: var(--radius-md);
+padding: 20px;
+margin-top: 20px;
+}
+.inv-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.inv-row.total { border-top: 2px solid var(--border-color); padding-top: 10px; font-weight: 800; font-size: 18px; color: var(--primary); }
+
+@media print {
+body { background: #fff; padding: 0; }
+.tabs, .header, .btn, .card:not(#invoicePrintCard) { display: none !important; }
+.card { border: none; box-shadow: none; padding: 0; }
+.invoice-box { border: none; padding: 0; }
+}
+</style>
+  <link rel="stylesheet" href="../premium-module.css">
+  <link rel="stylesheet" href="../cc-exact-pages.css">
+</head>
+<body class="cc-page cc-invoice">
+
+<div class="container">
+
+<div class="header">
+<div>
+<h1>🧵 CUFFI CREATES</h1>
+<p>Sistemi i Porosive & Gjeneruesi i Faturave për Klientët</p>
+</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+<button class="tab-btn active" onclick="switchTab('tab-orders')">📋 Porositë & Ndjekja</button>
+<button class="tab-btn" onclick="switchTab('tab-new')">➕ Shto Porosi të Re</button>
+</div>
+
+<!-- TAB 1: LISTA E POROSIVE & NDJEKJA -->
+<div id="tab-orders" class="tab-content">
+<div class="card">
+<h3 style="margin-bottom: 20px;">Lista e Porosive Aktive</h3>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th># Porosia</th>
+<th>Klienti</th>
+<th>Produkti / Përmasat</th>
+<th>Çmimi Tot.</th>
+<th>Kapari</th>
+<th>Mbetja</th>
+<th>Statusi</th>
+<th>Veprime</th>
+</tr>
+</thead>
+<tbody id="ordersTbody"></tbody>
+</table>
+</div>
+</div>
+
+<!-- Fatura Preview Section -->
+<div class="card" id="invoicePrintCard" style="display: none;">
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;" class="no-print">
+<h3>📄 Fatura & Ndjekja e Statusit</h3>
+<button class="btn btn-secondary" onclick="window.print()">🖨️ Printo / Shkarko PDF</button>
+</div>
+
+<div class="invoice-box" id="invoiceBox">
+<!-- Content generated via JS -->
+</div>
+</div>
+</div>
+
+<!-- TAB 2: SHTO POROSI TE RE -->
+<div id="tab-new" class="tab-content" style="display: none;">
+<div class="card">
+<h3 style="margin-bottom: 20px;">Shto Porosi të Re për Klientin</h3>
+
+<div class="grid-2">
+<div class="form-group">
+<label>Emri i Klientit</label>
+<input type="text" id="newClientName" placeholder="p.sh. Agron Berisha">
+</div>
+<div class="form-group">
+<label>Telefon / WhatsApp</label>
+<input type="text" id="newClientPhone" placeholder="+383 49 123 456">
+</div>
+</div>
+
+<div class="grid-3">
+<div class="form-group">
+<label>Emri i Produktit / Dizajnit</label>
+<input type="text" id="newRugName" placeholder="p.sh. Qilim 'Kaws Custom'">
+</div>
+<div class="form-group">
+<label>Përmasat (cm)</label>
+<input type="text" id="newRugSize" placeholder="80 x 100 cm">
+</div>
+<div class="form-group">
+<label>Statusi Fillestar</label>
+<select id="newStatus">
+<option value="Në Vizatim">Në Vizatim</option>
+<option value="Në Tufting">Në Tufting</option>
+<option value="Në Carving">Në Carving/Rregullim</option>
+<option value="Gati">Gati për Dorëzim</option>
+</select>
+</div>
+</div>
+
+<div class="grid-3">
+<div class="form-group">
+<label>Çmimi Përfundimtar (€)</label>
+<input type="number" id="newPrice" placeholder="150" oninput="calcRemaining()">
+</div>
+<div class="form-group">
+<label>Kapari i Paguar (€)</label>
+<input type="number" id="newDeposit" placeholder="50" oninput="calcRemaining()">
+</div>
+<div class="form-group">
+<label>Mbetja për T'u Paguar (€)</label>
+<input type="number" id="newRemaining" readonly style="background: var(--accent-bg); font-weight: bold;">
+</div>
+</div>
+
+<div class="form-group">
+<label>Shënime Shtesë (P.sh. Ngjyrat, Adresa e Postës)</label>
+<textarea id="newNotes" rows="3" placeholder="Shto detaje të tjera për porosinë..."></textarea>
+</div>
+
+<button class="btn btn-primary" onclick="createNewOrder()">💾 Ruaj Porosinë & Gjenero Faturën</button>
+</div>
+</div>
+
+</div>
+
+<script>
+let orders = JSON.parse(localStorage.getItem('cuffi_invoices_orders')) || [
+{
+id: "INV-1001",
+client: "Arben Gashi",
+phone: "+383 44 987 654",
+rug: "Qilim 'Sneaker Jordan'",
+size: "90 x 120 cm",
+price: 180,
+deposit: 90,
+remaining: 90,
+status: "Në Tufting",
+notes: "Dërgimi me postë në Prishtinë. Kapari u pagua me Bankë.",
+date: "27/07/2026"
+}
+];
+
+function switchTab(tabId) {
+document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+document.getElementById(tabId).style.display = 'block';
+event.target.classList.add('active');
+}
+
+function calcRemaining() {
+const price = parseFloat(document.getElementById('newPrice').value) || 0;
+const deposit = parseFloat(document.getElementById('newDeposit').value) || 0;
+document.getElementById('newRemaining').value = (price - deposit).toFixed(2);
+}
+
+function createNewOrder() {
+const client = document.getElementById('newClientName').value;
+const phone = document.getElementById('newClientPhone').value;
+const rug = document.getElementById('newRugName').value;
+const size = document.getElementById('newRugSize').value;
+const price = parseFloat(document.getElementById('newPrice').value) || 0;
+const deposit = parseFloat(document.getElementById('newDeposit').value) || 0;
+const remaining = price - deposit;
+const status = document.getElementById('newStatus').value;
+const notes = document.getElementById('newNotes').value;
+
+if(!client || !rug || price <= 0) {
+alert("Ju lutem plotësoni Emrin e Klientit, Produktit dhe Çmimin!");
+return;
+}
+
+const newOrder = {
+id: "INV-" + Math.floor(1000 + Math.random() * 9000),
+client, phone, rug, size, price, deposit, remaining, status, notes,
+date: new Date().toLocaleDateString('sq-AL')
+};
+
+orders.unshift(newOrder);
+localStorage.setItem('cuffi_invoices_orders', JSON.stringify(orders));
+
+// Reset form
+document.getElementById('newClientName').value = '';
+document.getElementById('newClientPhone').value = '';
+document.getElementById('newRugName').value = '';
+document.getElementById('newRugSize').value = '';
+document.getElementById('newPrice').value = '';
+document.getElementById('newDeposit').value = '';
+document.getElementById('newRemaining').value = '';
+document.getElementById('newNotes').value = '';
+
+renderOrders();
+switchTab('tab-orders');
+viewInvoice(newOrder.id);
+}
+
+function renderOrders() {
+const tbody = document.getElementById('ordersTbody');
+tbody.innerHTML = '';
+
+orders.forEach((o, index) => {
+let statusBadgeClass = 'st-vizatim';
+if(o.status === 'Në Tufting') statusBadgeClass = 'st-tufting';
+if(o.status === 'Në Carving') statusBadgeClass = 'st-carving';
+if(o.status === 'Gati') statusBadgeClass = 'st-gati';
+if(o.status === 'Dorëzuar') statusBadgeClass = 'st-dorezuar';
+
+tbody.innerHTML += `
+<tr>
+<td><strong>${o.id}</strong></td>
+<td>${o.client}<br><small style="color:var(--text-muted);">${o.phone}</small></td>
+<td>${o.rug}<br><small style="color:var(--text-muted);">${o.size}</small></td>
+<td><strong>${o.price.toFixed(2)} €</strong></td>
+<td style="color:var(--success);">${o.deposit.toFixed(2)} €</td>
+<td style="color:var(--danger); font-weight:bold;">${o.remaining.toFixed(2)} €</td>
+<td>
+<select style="padding:4px; font-size:12px;" onchange="updateStatus(${index}, this.value)">
+<option value="Në Vizatim" ${o.status==='Në Vizatim'?'selected':''}>1. Në Vizatim</option>
+<option value="Në Tufting" ${o.status==='Në Tufting'?'selected':''}>2. Në Tufting</option>
+<option value="Në Carving" ${o.status==='Në Carving'?'selected':''}>3. Në Carving</option>
+<option value="Gati" ${o.status==='Gati'?'selected':''}>4. Gati</option>
+<option value="Dorëzuar" ${o.status==='Dorëzuar'?'selected':''}>5. Dorëzuar</option>
+</select>
+</td>
+<td>
+<button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="viewInvoice('${o.id}')">👁️ Fatura</button>
+<button class="btn btn-danger" onclick="deleteOrder(${index})">✕</button>
+</td>
+</tr>
+`;
+});
+}
+
+function updateStatus(index, newStatus) {
+orders[index].status = newStatus;
+localStorage.setItem('cuffi_invoices_orders', JSON.stringify(orders));
+renderOrders();
+}
+
+function deleteOrder(index) {
+if(confirm("Dëshiron ta fshish këtë porosi?")) {
+orders.splice(index, 1);
+localStorage.setItem('cuffi_invoices_orders', JSON.stringify(orders));
+renderOrders();
+document.getElementById('invoicePrintCard').style.display = 'none';
+}
+}
+
+function viewInvoice(id) {
+const o = orders.find(item => item.id === id);
+if(!o) return;
+
+const printCard = document.getElementById('invoicePrintCard');
+printCard.style.display = 'block';
+
+const steps = ['Në Vizatim', 'Në Tufting', 'Në Carving', 'Gati'];
+const currentStepIdx = steps.indexOf(o.status);
+
+let stepsHTML = '';
+steps.forEach((stepName, idx) => {
+let classState = '';
+if(idx < currentStepIdx || o.status === 'Dorëzuar') classState = 'completed';
+else if(idx === currentStepIdx) classState = 'active';
+
+stepsHTML += `
+<div class="step ${classState}">
+<div class="icon">${idx + 1}</div>
+<span>${stepName}</span>
+</div>
+`;
+});
+
+document.getElementById('invoiceBox').innerHTML = `
+<div class="inv-header">
+<div>
+<div class="inv-logo">🧵 CUFFI CREATES</div>
+<p style="font-size:13px; color:var(--text-muted);">Studio Profesionale Tufting</p>
+</div>
+<div class="inv-details">
+<p><strong>FATURË POROSIE:</strong> #${o.id}</p>
+<p>Data: ${o.date}</p>
+</div>
+</div>
+
+<div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:14px;">
+<div>
+<strong>PËR KLIENTIN:</strong><br>
+${o.client}<br>
+${o.phone}
+</div>
+<div style="text-align:right;">
+<strong>STATUSI I POROSISË:</strong><br>
+<span class="badge st-tufting" style="margin-top:4px;">${o.status}</span>
+</div>
+</div>
+
+<div style="margin: 30px 0;">
+<p style="font-size:12px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">PROGRES I PUNIMIT:</p>
+<div class="inv-status-tracker">
+${stepsHTML}
+</div>
+</div>
+
+<table style="margin-bottom: 20px;">
+<thead>
+<tr>
+<th>Përshkrimi i Produktit</th>
+<th>Përmasat</th>
+<th style="text-align:right;">Totali (€)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>${o.rug}</strong><br><small style="color:var(--text-muted);">${o.notes || 'Punim me dorë tufting'}</small></td>
+<td>${o.size}</td>
+<td style="text-align:right;"><strong>${o.price.toFixed(2)} €</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="inv-summary">
+<div class="inv-row">
+<span>Çmimi Totak i Produktit:</span>
+<span>${o.price.toFixed(2)} €</span>
+</div>
+<div class="inv-row" style="color: var(--success);">
+<span>Kapari i Paguar (Deposit):</span>
+<span>-${o.deposit.toFixed(2)} €</span>
+</div>
+<div class="inv-row total">
+<span>MBETJA PËR T'U PAGUAR TE DORËZIMI:</span>
+<span>${o.remaining.toFixed(2)} €</span>
+</div>
+</div>
+
+<div style="text-align:center; margin-top:30px; font-size:12px; color:var(--text-muted); border-top:1px solid var(--border-color); padding-top:15px;">
+Faleminderit që zgjodhët <strong>CUFFI CREATES</strong>! Çdo qilim punohet me dashuri dhe artizanat.
+</div>
+`;
+
+printCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+renderOrders();
+</script>
+
+</body>
+</html>
