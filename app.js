@@ -30,44 +30,142 @@ const storage = {
   set(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 };
 
-const SUPABASE_URL = "https://xvnvzadfteklfqaiqdrq.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ekRk1TrmEX8wF3DTxx1pZw_hahcOzzu";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const AUTH_USER = "cuffi";
+const AUTH_PASS = "11asdrosagzimi";
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
 
-
-const UI_LANG = {
-  sq: {dashboard:'Dashboard', programs:'Programet', appointments:'Terminat', workhours:'Orët e Punës', statistics:'Statistikat', gallery:'Galeria', backup:'Backup & Restore', settings:'Cilësimet', more:'Më shumë', settingsTitle:'Cilësimet', langTitle:'Gjuha e faqes', langDesc:'Zgjidh gjuhën që preferon për ndërfaqen.', nameTitle:'Emri në përshëndetje', nameDesc:'Ky emër shfaqet në Dashboard.', notifTitle:'Njoftimet e termineve', notifDesc:'Lejo browser-in të të njoftojë 30 minuta para dhe në orën e terminit.', clearTitle:'Pastro të dhënat lokale', clearDesc:'Fshin terminet, shënimet dhe orët e ruajtura.', clear:'Pastro', enable:'Aktivizo', active:'Aktive ✓', disable:'Çaktivizo', disabled:'Të çaktivizuara', backupDesc:'Ruaj një kopje të të gjitha të dhënave lokale dhe riktheje kur të duhet.', workDesc:'Çdo ndalesë ruhet me datë, orë fillimi, orë mbarimi dhe përshkrim.', exportCsv:'Eksporto CSV'},
-  de: {dashboard:'Dashboard', programs:'Programme', appointments:'Termine', workhours:'Arbeitszeiten', statistics:'Statistiken', gallery:'Galerie', backup:'Backup & Wiederherstellung', settings:'Einstellungen', more:'Mehr', settingsTitle:'Einstellungen', langTitle:'Seitensprache', langDesc:'Wähle die gewünschte Sprache der Oberfläche.', nameTitle:'Name in der Begrüßung', nameDesc:'Dieser Name wird im Dashboard angezeigt.', notifTitle:'Terminbenachrichtigungen', notifDesc:'Der Browser erinnert dich 30 Minuten vorher und zum Terminzeitpunkt.', clearTitle:'Lokale Daten löschen', clearDesc:'Löscht Termine, Notizen und gespeicherte Arbeitszeiten.', clear:'Löschen', enable:'Aktivieren', active:'Aktiv ✓', disable:'Deaktivieren', disabled:'Deaktiviert', backupDesc:'Speichere eine Kopie aller lokalen Daten und stelle sie bei Bedarf wieder her.', workDesc:'Jeder Stopp wird mit Datum, Startzeit, Endzeit und Beschreibung gespeichert.', exportCsv:'CSV exportieren'},
-  en: {dashboard:'Dashboard', programs:'Programs', appointments:'Appointments', workhours:'Work Hours', statistics:'Statistics', gallery:'Gallery', backup:'Backup & Restore', settings:'Settings', more:'More', settingsTitle:'Settings', langTitle:'Page language', langDesc:'Choose the preferred interface language.', nameTitle:'Greeting name', nameDesc:'This name appears on the Dashboard.', notifTitle:'Appointment notifications', notifDesc:'The browser can notify you 30 minutes before and at appointment time.', clearTitle:'Clear local data', clearDesc:'Deletes appointments, notes and saved work hours.', clear:'Clear', enable:'Enable', active:'Active ✓', disable:'Disable', disabled:'Disabled', backupDesc:'Save a copy of all local data and restore it whenever you need.', workDesc:'Every stop is saved with date, start time, end time and description.', exportCsv:'Export CSV'}
+const UI_TRANSLATIONS = {
+  sq: {
+    settingsTitle: 'Cilësimet',
+    backupTitle: 'Backup & Restore',
+    backupDesc: 'Ruaj një kopje të të gjitha të dhënave lokale dhe riktheje kur të duhet.',
+    backupCreateTitle: 'Krijo Backup',
+    backupCreateDesc: 'Eksporton terminet, galerinë, shënimet, orët dhe të dhënat e programeve në një skedar JSON.',
+    backupDownload: 'Shkarko Backup',
+    backupRestoreTitle: 'Rikthe Backup',
+    backupRestoreDesc: 'Zgjidh një skedar backup të krijuar nga ky sistem. Të dhënat aktuale do të zëvendësohen.',
+    chooseFile: 'Zgjidh skedarin',
+    workTitle: 'Orët e Punës',
+    workDesc: 'Çdo ndalesë ruhet me datë, orë fillimi, orë mbarimi dhe përshkrim.',
+    exportCsv: 'Eksporto CSV',
+    settingNameTitle: 'Emri në përshëndetje',
+    settingNameDesc: 'Ky emër shfaqet në Dashboard.',
+    settingLangTitle: 'Gjuha e faqes',
+    settingLangDesc: 'Zgjidh gjuhën që preferon për ndërfaqen.',
+    settingNotifTitle: 'Njoftimet e termineve',
+    settingNotifDesc: 'Lejo browser-in të të njoftojë 30 minuta para dhe në orën e terminit.',
+    settingClearTitle: 'Pastro të dhënat lokale',
+    settingClearDesc: 'Fshin terminet, shënimet dhe orët e ruajtura.',
+    enableNotif: 'Aktivizo',
+    activeNotif: 'Aktive ✓',
+    disabledNotif: 'Të çaktivizuara',
+    disableNotif: 'Çaktivizo',
+    blockedNotif: 'E bllokuar',
+    unsupportedNotif: 'Nuk mbështetet',
+    clearData: 'Pastro'
+  },
+  de: {
+    settingsTitle: 'Einstellungen',
+    backupTitle: 'Backup & Wiederherstellung',
+    backupDesc: 'Speichere eine Kopie aller lokalen Daten und stelle sie bei Bedarf wieder her.',
+    backupCreateTitle: 'Backup erstellen',
+    backupCreateDesc: 'Exportiert Termine, Galerie, Notizen, Arbeitszeiten und Programmdaten in eine JSON-Datei.',
+    backupDownload: 'Backup herunterladen',
+    backupRestoreTitle: 'Backup wiederherstellen',
+    backupRestoreDesc: 'Wähle eine mit diesem System erstellte Backup-Datei. Die aktuellen Daten werden ersetzt.',
+    chooseFile: 'Datei auswählen',
+    workTitle: 'Arbeitszeiten',
+    workDesc: 'Jeder Stopp wird mit Datum, Startzeit, Endzeit und Beschreibung gespeichert.',
+    exportCsv: 'CSV exportieren',
+    settingNameTitle: 'Name in der Begrüßung',
+    settingNameDesc: 'Dieser Name wird im Dashboard angezeigt.',
+    settingLangTitle: 'Seitensprache',
+    settingLangDesc: 'Wähle die gewünschte Sprache der Oberfläche.',
+    settingNotifTitle: 'Terminbenachrichtigungen',
+    settingNotifDesc: 'Erlaube dem Browser, dich 30 Minuten vorher und zum Terminzeitpunkt zu benachrichtigen.',
+    settingClearTitle: 'Lokale Daten löschen',
+    settingClearDesc: 'Löscht Termine, Notizen und gespeicherte Arbeitszeiten.',
+    enableNotif: 'Aktivieren',
+    activeNotif: 'Aktiv ✓',
+    disabledNotif: 'Deaktiviert',
+    disableNotif: 'Deaktivieren',
+    blockedNotif: 'Blockiert',
+    unsupportedNotif: 'Nicht unterstützt',
+    clearData: 'Löschen'
+  },
+  en: {
+    settingsTitle: 'Settings',
+    backupTitle: 'Backup & Restore',
+    backupDesc: 'Save a copy of all local data and restore it whenever you need.',
+    backupCreateTitle: 'Create Backup',
+    backupCreateDesc: 'Exports appointments, gallery, notes, work hours and app data into a JSON file.',
+    backupDownload: 'Download Backup',
+    backupRestoreTitle: 'Restore Backup',
+    backupRestoreDesc: 'Choose a backup file created by this system. Current data will be replaced.',
+    chooseFile: 'Choose file',
+    workTitle: 'Work Hours',
+    workDesc: 'Every stop is saved with date, start time, end time and description.',
+    exportCsv: 'Export CSV',
+    settingNameTitle: 'Greeting name',
+    settingNameDesc: 'This name appears on the Dashboard.',
+    settingLangTitle: 'Page language',
+    settingLangDesc: 'Choose the preferred interface language.',
+    settingNotifTitle: 'Appointment notifications',
+    settingNotifDesc: 'Allow the browser to notify you 30 minutes before and at appointment time.',
+    settingClearTitle: 'Clear local data',
+    settingClearDesc: 'Deletes appointments, notes and saved work hours.',
+    enableNotif: 'Enable',
+    activeNotif: 'Active ✓',
+    disabledNotif: 'Disabled',
+    disableNotif: 'Disable',
+    blockedNotif: 'Blocked',
+    unsupportedNotif: 'Unsupported',
+    clearData: 'Clear'
+  }
 };
-function currentUiLang(){ return storage.get('cc_lang','sq'); }
-function uiText(key){ const lang=currentUiLang(); return (UI_LANG[lang]||UI_LANG.sq)[key] || UI_LANG.sq[key] || key; }
-function setNodeText(selector,text){ const el=$(selector); if(el) el.textContent=text; }
-function applyUiLanguage(lang=currentUiLang()){
-  storage.set('cc_lang',lang); document.documentElement.lang=lang;
-  const t=UI_LANG[lang]||UI_LANG.sq;
-  const navMap={dashboard:t.dashboard,appointments:t.appointments,workhours:t.workhours,statistics:t.statistics,gallery:t.gallery,backup:t.backup,settings:t.settings};
-  Object.entries(navMap).forEach(([k,v])=>{
-    // Ndrysho vetëm etiketat e tekstit; mos prek span-in e ikonës në drawer.
-    $$(`.side-nav [data-view="${k}"] span, .mp-bottom [data-view="${k}"] span, .mobile-bottom-nav [data-view="${k}"] span`).forEach(el=>el.textContent=v);
-    const drawerLabel=$(`#mpDrawerList [data-view="${k}"] strong`);
-    if(drawerLabel) drawerLabel.textContent=v;
-  });
-  const mpPrograms=$('#mpProgramsBottom span'); if(mpPrograms) mpPrograms.textContent=t.programs;
-  const mpMore=$('#mpMore span'); if(mpMore) mpMore.textContent=t.more;
-  const settingsRows=$$('#settingsView .setting-row');
-  setNodeText('#settingsView h2',t.settingsTitle);
-  if(settingsRows[0]){settingsRows[0].querySelector('strong').textContent=t.nameTitle;settingsRows[0].querySelector('span').textContent=t.nameDesc;}
-  if(settingsRows[1]){settingsRows[1].querySelector('strong').textContent=t.langTitle;settingsRows[1].querySelector('span').textContent=t.langDesc;}
-  if(settingsRows[2]){settingsRows[2].querySelector('strong').textContent=t.notifTitle;settingsRows[2].querySelector('span').textContent=t.notifDesc;}
-  if(settingsRows[3]){settingsRows[3].querySelector('strong').textContent=t.clearTitle;settingsRows[3].querySelector('span').textContent=t.clearDesc;setNodeText('#clearData',t.clear);}
-  setNodeText('#backupView h2',t.backup); setNodeText('#backupView .view-heading p',t.backupDesc);
-  setNodeText('#workhoursView h2',t.workhours); setNodeText('#workhoursView .view-heading p',t.workDesc);
-  const exp=$('#exportWorkCsv'); if(exp) exp.innerHTML='<i class="fa-solid fa-file-csv"></i> '+t.exportCsv;
+function currentLanguage(){ return storage.get('cc_lang', 'sq'); }
+function tr(key, lang = currentLanguage()){
+  const dict = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.sq;
+  return dict[key] || UI_TRANSLATIONS.sq[key] || key;
+}
+function notificationsEnabled(){ return storage.get('cc_notifications_enabled', true); }
+function setNotificationsEnabled(enabled){ storage.set('cc_notifications_enabled', !!enabled); updateNotificationButton(); }
+function setText(selector, text){ const el = $(selector); if (el) el.textContent = text; }
+function setHtmlWithIcon(selector, iconClass, text){ const el = $(selector); if (el) el.innerHTML = iconClass ? '<i class="'+iconClass+'"></i> ' + text : text; }
+function applyLanguage(lang = currentLanguage()){
+  storage.set('cc_lang', lang);
+  document.documentElement.lang = lang;
+  const nameRow = $$('#settingsView .setting-row')[0];
+  const langRow = $$('#settingsView .setting-row')[1];
+  const notifRow = $$('#settingsView .setting-row')[2];
+  const clearRow = $$('#settingsView .setting-row')[3];
+  setText('#settingsView h2', tr('settingsTitle', lang));
+  if (nameRow){ setText('#settingsView .setting-row:nth-of-type(1) strong', tr('settingNameTitle', lang)); setText('#settingsView .setting-row:nth-of-type(1) span', tr('settingNameDesc', lang)); }
+  if (langRow){ setText('#settingsView .setting-row:nth-of-type(2) strong', tr('settingLangTitle', lang)); setText('#settingsView .setting-row:nth-of-type(2) span', tr('settingLangDesc', lang)); }
+  if (notifRow){ setText('#settingsView .setting-row:nth-of-type(3) strong', tr('settingNotifTitle', lang)); setText('#settingsView .setting-row:nth-of-type(3) span', tr('settingNotifDesc', lang)); }
+  if (clearRow){ setText('#settingsView .setting-row:nth-of-type(4) strong', tr('settingClearTitle', lang)); setText('#settingsView .setting-row:nth-of-type(4) span', tr('settingClearDesc', lang)); setText('#clearData', tr('clearData', lang)); }
+
+  setText('#backupView h2', tr('backupTitle', lang));
+  setText('#backupView .view-heading p', tr('backupDesc', lang));
+  const backupCards = $$('#backupView .backup-card');
+  if (backupCards[0]) {
+    const title = backupCards[0].querySelector('h3'); const desc = backupCards[0].querySelector('p'); const btn = backupCards[0].querySelector('button');
+    if (title) title.textContent = tr('backupCreateTitle', lang);
+    if (desc) desc.textContent = tr('backupCreateDesc', lang);
+    if (btn) btn.textContent = tr('backupDownload', lang);
+  }
+  if (backupCards[1]) {
+    const title = backupCards[1].querySelector('h3'); const desc = backupCards[1].querySelector('p'); const label = backupCards[1].querySelector('label.upload-label'); const input = label?.querySelector('input');
+    if (title) title.textContent = tr('backupRestoreTitle', lang);
+    if (desc) desc.textContent = tr('backupRestoreDesc', lang);
+    if (label) { label.textContent = tr('chooseFile', lang); if (input) label.appendChild(input); }
+  }
+
+  setText('#workhoursView h2', tr('workTitle', lang));
+  setText('#workhoursView .view-heading p', tr('workDesc', lang));
+  setHtmlWithIcon('#exportWorkCsv', 'fa-solid fa-file-csv', tr('exportCsv', lang));
   updateNotificationButton();
 }
-function notificationsEnabled(){ return storage.get('cc_notifications_enabled',true); }
 
 window.addEventListener("DOMContentLoaded", () => {
   ensureToastContainer();
@@ -110,7 +208,6 @@ function bindNavigation() {
     if (view) setView(view.dataset.view);
   });
   $('#resetView').onclick = logout;
-  $('#mpLogout') && ($('#mpLogout').onclick = logout);
   $('#backDashboard').onclick = () => setView('dashboard');
   $('#jumpCalendar').onclick = () => {
     setView('dashboard');
@@ -125,6 +222,7 @@ function bindNavigation() {
 }
 
 function openApp(key) {
+  document.body.style.backgroundColor = '#d92525';
   const app = APPS[key];
   if (!app) return;
   state.currentApp = key;
@@ -238,8 +336,6 @@ function sortedEvents() { return events().slice().sort((a, b) => eventDateTime(a
 function initCalendar() {
   $('#prevMonth').onclick = () => { state.currentMonth.setMonth(state.currentMonth.getMonth() - 1); renderCalendar(); };
   $('#nextMonth').onclick = () => { state.currentMonth.setMonth(state.currentMonth.getMonth() + 1); renderCalendar(); };
-  $('#appointmentsPrevMonth') && ($('#appointmentsPrevMonth').onclick = () => { state.currentMonth.setMonth(state.currentMonth.getMonth() - 1); renderCalendar(); });
-  $('#appointmentsNextMonth') && ($('#appointmentsNextMonth').onclick = () => { state.currentMonth.setMonth(state.currentMonth.getMonth() + 1); renderCalendar(); });
   $('#heroAddEvent').onclick = () => openEventDialog(new Date());
   $('#eventForm').addEventListener('submit', event => {
     event.preventDefault();
@@ -270,8 +366,7 @@ function initCalendar() {
 function renderCalendar() {
   const year = state.currentMonth.getFullYear();
   const month = state.currentMonth.getMonth();
-  if ($('#monthTitle')) $('#monthTitle').textContent = `${monthNames[month]} ${year}`;
-  if ($('#appointmentsMonthTitle')) $('#appointmentsMonthTitle').textContent = `${monthNames[month]} ${year}`;
+  $('#monthTitle').textContent = `${monthNames[month]} ${year}`;
   const first = (new Date(year, month, 1).getDay() + 6) % 7;
   const days = new Date(year, month + 1, 0).getDate();
   const previousDays = new Date(year, month, 0).getDate();
@@ -288,9 +383,8 @@ function renderCalendar() {
     const count = all.filter(item => item.date === key && !item.completed).length;
     html += `<button class="day ${muted ? 'muted' : ''} ${key === today ? 'today' : ''} ${count ? 'has-event' : ''}" data-date="${key}">${date.getDate()}${count ? `<span class="count">${count}</span>` : ''}</button>`;
   }
-  if ($('#calendarGrid')) $('#calendarGrid').innerHTML = html;
-  if ($('#appointmentsCalendarGrid')) $('#appointmentsCalendarGrid').innerHTML = html;
-  $$('#calendarGrid .day, #appointmentsCalendarGrid .day').forEach(button => button.onclick = () => openDay(button.dataset.date));
+  $('#calendarGrid').innerHTML = html;
+  $$('.day').forEach(button => button.onclick = () => openDay(button.dataset.date));
 }
 
 function openDay(dateKey) {
@@ -485,21 +579,45 @@ async function requestNotificationPermission() {
     return;
   }
   const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    setNotificationsEnabled(true);
+    showToast('Njoftimet u aktivizuan', 'Do të njoftohesh 30 minuta para dhe kur fillon termini.');
+  } else {
+    showToast('Njoftimet nuk u aktivizuan', 'Mund t’i lejosh nga cilësimet e browser-it.');
+  }
   updateNotificationButton();
-  if (permission === 'granted') { storage.set('cc_notifications_enabled', true); showToast('Njoftimet u aktivizuan', 'Do të njoftohesh 30 minuta para dhe kur fillon termini.'); }
-  else showToast('Njoftimet nuk u aktivizuan', 'Mund t’i lejosh nga cilësimet e browser-it.');
+}
+
+function disableNotifications() {
+  setNotificationsEnabled(false);
+  showToast('Njoftimet u çaktivizuan', 'Nuk do të shfaqen njoftime të reja derisa t’i aktivizosh sërish.');
 }
 
 function updateNotificationButton() {
-  const button = $('#enableNotifications');
-  const off = $('#disableNotifications');
-  if (!button) return;
-  if (!('Notification' in window)) { button.textContent = 'Nuk mbështetet'; button.disabled = true; if(off) off.disabled=true; return; }
+  const enableButton = $('#enableNotifications');
+  const disableButton = $('#disableNotifications');
+  if (!enableButton) return;
   const enabled = notificationsEnabled();
-  if (Notification.permission === 'granted') { button.textContent = enabled ? uiText('active') : uiText('enable'); button.disabled = enabled; }
-  else if (Notification.permission === 'denied') { button.textContent = 'E bllokuar'; button.disabled = false; }
-  else { button.textContent = uiText('enable'); button.disabled = false; }
-  if(off){ off.textContent = enabled ? uiText('disable') : uiText('disabled'); off.disabled = !enabled; }
+  if (!('Notification' in window)) {
+    enableButton.textContent = tr('unsupportedNotif');
+    enableButton.disabled = true;
+    if (disableButton) { disableButton.textContent = tr('disableNotif'); disableButton.disabled = true; }
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    enableButton.textContent = enabled ? tr('activeNotif') : tr('enableNotif');
+    enableButton.disabled = enabled;
+  } else if (Notification.permission === 'denied') {
+    enableButton.textContent = tr('blockedNotif');
+    enableButton.disabled = false;
+  } else {
+    enableButton.textContent = tr('enableNotif');
+    enableButton.disabled = false;
+  }
+  if (disableButton) {
+    disableButton.textContent = enabled ? tr('disableNotif') : tr('disabledNotif');
+    disableButton.disabled = !enabled;
+  }
 }
 
 function safeArray(key) { const value = storage.get(key, []); return Array.isArray(value) ? value : []; }
@@ -576,8 +694,147 @@ function exportWorkCsv(){const rows=[['Data','Start','Stop','Sekonda','Koha','Pe
 function downloadBlob(content,name,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 
 function initBackup(){
-  $('#exportBackup').addEventListener('click',()=>{const data={version:6,created:new Date().toISOString(),localStorage:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);data.localStorage[k]=localStorage.getItem(k)}downloadBlob(JSON.stringify(data,null,2),`cuffi-backup-${dayKey()}.json`,'application/json');showToast('Backup u krijua','Skedari JSON u shkarkua.');});
-  $('#importBackup').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.localStorage||typeof data.localStorage!=='object')throw new Error();if(!confirm('Të zëvendësohen të dhënat aktuale me backup-in?'))return;localStorage.clear();Object.entries(data.localStorage).forEach(([k,v])=>localStorage.setItem(k,v));alert('Backup u rikthye. Faqja do të rifreskohet.');location.reload()}catch{alert('Skedari backup nuk është i vlefshëm.')}finally{e.target.value=''}});
+  // Backup overflow storage:
+  // Disa backup-e të vjetra kanë shumë foto base64 dhe mund të kalojnë kufirin e localStorage.
+  // Çelësat që nuk futen më në localStorage ruhen këtu, që të mos humbasin nga backup-i.
+  const CUFFI_OVERFLOW_DB='cuffi_backup_overflow_v1';
+  const CUFFI_OVERFLOW_STORE='items';
+
+  function cuffiOpenOverflowDB(){
+    return new Promise((resolve,reject)=>{
+      const req=indexedDB.open(CUFFI_OVERFLOW_DB,1);
+      req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(CUFFI_OVERFLOW_STORE))req.result.createObjectStore(CUFFI_OVERFLOW_STORE)};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    });
+  }
+
+  async function cuffiOverflowClear(){
+    const db=await cuffiOpenOverflowDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(CUFFI_OVERFLOW_STORE,'readwrite');
+      tx.objectStore(CUFFI_OVERFLOW_STORE).clear();
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+    });
+    db.close();
+  }
+
+  async function cuffiOverflowPut(key,value){
+    const db=await cuffiOpenOverflowDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(CUFFI_OVERFLOW_STORE,'readwrite');
+      tx.objectStore(CUFFI_OVERFLOW_STORE).put(value,key);
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+    });
+    db.close();
+  }
+
+  async function cuffiOverflowGetAll(){
+    const db=await cuffiOpenOverflowDB();
+    const result=await new Promise((resolve,reject)=>{
+      const tx=db.transaction(CUFFI_OVERFLOW_STORE,'readonly');
+      const store=tx.objectStore(CUFFI_OVERFLOW_STORE);
+      const out={};
+      const req=store.openCursor();
+      req.onsuccess=()=>{
+        const c=req.result;
+        if(!c){resolve(out);return}
+        out[c.key]=c.value;
+        c.continue();
+      };
+      req.onerror=()=>reject(req.error);
+    });
+    db.close();
+    return result;
+  }
+
+  $('#exportBackup').addEventListener('click',async()=>{
+    try{
+      const data={version:7,created:new Date().toISOString(),localStorage:{}};
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        data.localStorage[k]=localStorage.getItem(k);
+      }
+      // Bashko edhe çfarë është ruajtur në overflow, që backup-i të mbetet komplet.
+      try{
+        const overflow=await cuffiOverflowGetAll();
+        Object.entries(overflow).forEach(([k,v])=>{
+          if(!(k in data.localStorage)) data.localStorage[k]=v;
+        });
+      }catch(_){}
+      downloadBlob(JSON.stringify(data,null,2),`cuffi-backup-${dayKey()}.json`,'application/json');
+      showToast('Backup u krijua','Skedari JSON u shkarkua.');
+    }catch(err){
+      console.error(err);
+      alert('Backup-i nuk mund të krijohej.');
+    }
+  });
+
+  $('#importBackup').addEventListener('change',async e=>{
+    const f=e.target.files?.[0];
+    if(!f)return;
+    try{
+      const raw=await f.text();
+      let data;
+      try{ data=JSON.parse(raw); }
+      catch{ throw new Error('JSON_PARSE'); }
+
+      if(!data || !data.localStorage || typeof data.localStorage!=='object' || Array.isArray(data.localStorage)){
+        throw new Error('BAD_FORMAT');
+      }
+
+      if(!confirm('Të zëvendësohen të dhënat aktuale me backup-in?'))return;
+
+      // Fillojmë pastër.
+      localStorage.clear();
+      try{ await cuffiOverflowClear(); }catch(_){}
+
+      // Fut çelësat e vegjël të parët. Kjo siguron që të dhënat kryesore të programeve
+      // rikthehen edhe kur fotot e vjetra base64 janë shumë të mëdha për localStorage.
+      const entries=Object.entries(data.localStorage)
+        .map(([k,v])=>[k,typeof v==='string'?v:String(v)])
+        .sort((a,b)=>a[1].length-b[1].length);
+
+      const overflowKeys=[];
+      for(const [k,v] of entries){
+        try{
+          localStorage.setItem(k,v);
+        }catch(err){
+          // QuotaExceededError: ruaje të plotë në IndexedDB, mos e humb.
+          try{
+            await cuffiOverflowPut(k,v);
+            overflowKeys.push(k);
+          }catch(idbErr){
+            console.error('Nuk u ruajt çelësi:',k,idbErr);
+            throw new Error('RESTORE_FAILED');
+          }
+        }
+      }
+
+      if(overflowKeys.length){
+        alert(
+          'Backup u rikthye. Të dhënat kryesore janë rikthyer.\\n\\n' +
+          overflowKeys.length + ' element(e) shumë të mëdha (zakonisht foto të vjetra) ' +
+          'u ruajtën në memorien e sigurt të browser-it që të mos humbasin.\\n\\n' +
+          'Faqja do të rifreskohet.'
+        );
+      }else{
+        alert('Backup u rikthye plotësisht. Faqja do të rifreskohet.');
+      }
+      location.reload();
+    }catch(err){
+      console.error('Backup restore error:',err);
+      if(err && err.message==='JSON_PARSE'){
+        alert('Skedari nuk është JSON i vlefshëm.');
+      }else if(err && err.message==='BAD_FORMAT'){
+        alert('Ky JSON nuk është backup i Cuffi Studio.');
+      }else{
+        alert('Backup-i është i vlefshëm, por pati problem gjatë rikthimit. Të dhënat ekzistuese nuk duhet të fshihen përsëri; provo vetëm me këtë version të app.js.');
+      }
+    }finally{
+      e.target.value='';
+    }
+  });
 }
 
 function initNotes() {
@@ -638,159 +895,57 @@ function initSettings() {
     storage.set('cc_name', event.target.value.trim() || 'Jimmi');
     updateDateGreeting();
   });
-  const language = $('#languageSetting');
-  if(language){ language.value=currentUiLang(); language.addEventListener('change',e=>applyUiLanguage(e.target.value)); }
+  const languageSelect = $('#languageSetting');
+  if (languageSelect) {
+    languageSelect.value = currentLanguage();
+    languageSelect.addEventListener('change', event => applyLanguage(event.target.value));
+  }
   $('#enableNotifications').onclick = requestNotificationPermission;
-  const off=$('#disableNotifications');
-  if(off) off.onclick=()=>{storage.set('cc_notifications_enabled',false);updateNotificationButton();showToast('Njoftimet','Njoftimet e termineve u çaktivizuan.');};
-  applyUiLanguage(currentUiLang());
+  const disableBtn = $('#disableNotifications');
+  if (disableBtn) disableBtn.onclick = disableNotifications;
   updateNotificationButton();
+  applyLanguage(currentLanguage());
   $('#clearData').onclick = () => {
     if (!confirm('Të fshihen të gjitha të dhënat lokale?')) return;
-    ['cc_events', 'cc_notes', 'cc_gallery', 'cc_name', 'cc_timer_start', 'cc_timer_day', 'cc_work_sessions'].forEach(key => localStorage.removeItem(key));
+    ['cc_events', 'cc_notes', 'cc_gallery', 'cc_name', 'cc_timer_start', 'cc_timer_day', 'cc_work_sessions', 'cc_lang', 'cc_notifications_enabled'].forEach(key => localStorage.removeItem(key));
     Object.keys(localStorage).filter(key => key.startsWith('cc_work_')).forEach(key => localStorage.removeItem(key));
     location.reload();
   };
 }
 
-async function initAuth() {
+function initAuth() {
   const overlay = $('#loginOverlay');
-  const emailInput = $('#loginUsername');
-  const passwordInput = $('#loginPassword');
-  const errorBox = $('#loginError');
-
-  const showLogin = () => {
-    overlay.classList.remove('is-hidden');
-    setTimeout(() => emailInput?.focus(), 80);
-  };
-
-  const hideLogin = () => {
-    overlay.classList.add('is-hidden');
-    passwordInput.value = '';
-    errorBox.textContent = '';
-  };
-
+  const remembered = localStorage.getItem('cc_auth') === 'true';
+  const session = sessionStorage.getItem('cc_auth') === 'true';
+  if (remembered || session) { overlay.classList.add('is-hidden'); return; }
+  overlay.classList.remove('is-hidden');
+  setTimeout(() => $('#loginUsername')?.focus(), 80);
   $('#togglePassword').onclick = () => {
-    const show = passwordInput.type === 'password';
-    passwordInput.type = show ? 'text' : 'password';
+    const input = $('#loginPassword');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
     $('#togglePassword i').className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
   };
-
-  $('#loginForm').addEventListener('submit', async event => {
+  $('#loginForm').addEventListener('submit', event => {
     event.preventDefault();
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    errorBox.textContent = 'Duke hyrë...';
-
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      errorBox.textContent = error.message === 'Invalid login credentials'
-        ? 'Email-i ose fjalëkalimi është gabim.'
-        : `Nuk u krye hyrja: ${error.message}`;
-      passwordInput.select();
-      return;
+    const user = $('#loginUsername').value.trim();
+    const pass = $('#loginPassword').value;
+    if (user === AUTH_USER && pass === AUTH_PASS) {
+      $('#loginError').textContent = '';
+      if ($('#rememberLogin').checked) localStorage.setItem('cc_auth', 'true');
+      else sessionStorage.setItem('cc_auth', 'true');
+      overlay.classList.add('is-hidden');
+      $('#loginPassword').value = '';
+    } else {
+      $('#loginError').textContent = 'Përdoruesi ose fjalëkalimi është gabim.';
+      $('#loginPassword').select();
     }
-
-    errorBox.textContent = '';
-    hideLogin();
-  });
-
-  $('#forgotPassword').onclick = () => {
-    const dialog = $('#forgotPasswordDialog');
-    const emailField = $('#forgotPasswordEmail');
-    const currentEmail = $('#loginUsername')?.value.trim() || '';
-    $('#forgotPasswordError').textContent = '';
-    emailField.value = currentEmail;
-    dialog.showModal();
-    setTimeout(() => emailField.focus(), 50);
-  };
-
-  $('#forgotPasswordForm').addEventListener('submit', async event => {
-    event.preventDefault();
-
-    const email = $('#forgotPasswordEmail').value.trim();
-    const errorBox = $('#forgotPasswordError');
-    const sendButton = $('#sendResetEmail');
-
-    if (!email) {
-      errorBox.textContent = 'Shkruaj email-in.';
-      return;
-    }
-
-    errorBox.textContent = 'Po dërgohet email-i...';
-    sendButton.disabled = true;
-
-    const redirectTo = `${window.location.origin}${window.location.pathname}`;
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
-
-    sendButton.disabled = false;
-
-    if (error) {
-      if ((error.message || '').toLowerCase().includes('security purposes')) {
-        errorBox.textContent = 'Prit pak sekonda dhe provo përsëri.';
-      } else {
-        errorBox.textContent = `Email-i nuk u dërgua: ${error.message}`;
-      }
-      return;
-    }
-
-    errorBox.textContent = '';
-    $('#forgotPasswordDialog').close();
-    showToast('Email-i u dërgua', 'Kontrollo Inbox dhe Spam/Junk për linkun e ndryshimit të fjalëkalimit.');
-  });
-
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) hideLogin();
-  else showLogin();
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) hideLogin();
-    if (event === 'SIGNED_OUT') showLogin();
-
-    if (event === 'PASSWORD_RECOVERY') {
-      hideLogin();
-      setTimeout(() => {
-        $('#newPassword').value = '';
-        $('#confirmNewPassword').value = '';
-        $('#resetPasswordError').textContent = '';
-        $('#resetPasswordDialog').showModal();
-        $('#newPassword').focus();
-      }, 50);
-    }
-  });
-
-  $('#resetPasswordForm').addEventListener('submit', async event => {
-    event.preventDefault();
-    const password = $('#newPassword').value;
-    const confirmPassword = $('#confirmNewPassword').value;
-    const resetError = $('#resetPasswordError');
-
-    if (password.length < 6) {
-      resetError.textContent = 'Fjalëkalimi duhet të ketë të paktën 6 karaktere.';
-      return;
-    }
-    if (password !== confirmPassword) {
-      resetError.textContent = 'Fjalëkalimet nuk përputhen.';
-      return;
-    }
-
-    resetError.textContent = 'Duke ruajtur...';
-    const { error } = await supabaseClient.auth.updateUser({ password });
-
-    if (error) {
-      resetError.textContent = `Nuk u ruajt: ${error.message}`;
-      return;
-    }
-
-    resetError.textContent = '';
-    $('#resetPasswordDialog').close();
-    showToast('Fjalëkalimi u ndryshua', 'Tani mund të përdorësh fjalëkalimin e ri.');
   });
 }
 
-async function logout() {
-  await supabaseClient.auth.signOut();
+function logout() {
+  localStorage.removeItem('cc_auth');
+  sessionStorage.removeItem('cc_auth');
   setView('dashboard');
   $('#loginOverlay').classList.remove('is-hidden');
   $('#loginUsername').value = '';
@@ -814,4 +969,3 @@ function showToast(title, message) {
   setTimeout(() => toast.remove(), 5500);
 }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
-  document.head.insertAdjacentHTML("beforeend", "<style>body, .app-container, .dashboard, main { background: #070000 !important; }</style>");
