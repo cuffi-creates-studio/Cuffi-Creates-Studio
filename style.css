@@ -1230,6 +1230,85 @@ textarea {
 .login-submit:hover {
   filter: brightness(1.08);
 }
+/* 2FA: kodi nga telefoni */
+#loginForm[hidden] {
+  display: none;
+}
+/* Karta me QR mund të jetë më e lartë se ekrani i celularit: lejo lëvizjen. */
+.login-overlay.mfa-mode {
+  overflow-y: auto;
+}
+.login-overlay.mfa-mode .login-card {
+  margin: auto;
+}
+#mfaBody {
+  text-align: left;
+  display: grid;
+  gap: 14px;
+}
+#mfaBody > label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  color: #c9cce0;
+}
+#mfaCode {
+  font-size: 20px;
+  letter-spacing: 6px;
+  text-align: center;
+}
+.mfa-text,
+.mfa-steps {
+  margin: 0;
+  color: #aeb3cf;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mfa-steps {
+  padding-left: 20px;
+}
+.mfa-qr {
+  justify-self: center;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff;
+}
+.mfa-qr img {
+  display: block;
+  width: 180px;
+  height: 180px;
+}
+.mfa-key {
+  color: #aeb3cf;
+  font-size: 12px;
+}
+.mfa-key summary {
+  cursor: pointer;
+  color: #cf66ff;
+  font-weight: 700;
+}
+.mfa-key code {
+  display: block;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #070a1c;
+  color: #fff;
+  word-break: break-all;
+  user-select: all;
+}
+.mfa-back {
+  height: 42px;
+  border: 1px solid #30365e;
+  border-radius: 12px;
+  background: transparent;
+  color: #c9cce0;
+  font-weight: 700;
+  cursor: pointer;
+}
+#mfaForm .login-error {
+  margin-top: 12px;
+}
 @media (max-width: 640px) {
   .login-card {
     padding: 22px;

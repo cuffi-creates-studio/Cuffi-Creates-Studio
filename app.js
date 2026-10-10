@@ -31,7 +31,6 @@ const storage = {
 };
 
 const AUTH_USER = "cuffi";
-const AUTH_PASS = "11asdrosagzimi";
 const AUTH_EMAIL = "gezimtahiri1@web.de";
 const monthNames = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"];
 
@@ -977,14 +976,9 @@ function initSettings() {
   };
 }
 
-function initAuth() {
+async function initAuth() {
   const overlay = $('#loginOverlay');
-  const remembered = localStorage.getItem('cc_auth') === 'true';
-  const session = sessionStorage.getItem('cc_auth') === 'true';
-  const cloudReady = localStorage.getItem('cuffi_cloud_auth_ok') === 'true';
-  if ((remembered || session) && cloudReady) { overlay.classList.add('is-hidden'); return; }
   overlay.classList.remove('is-hidden');
-  setTimeout(() => $('#loginUsername')?.focus(), 80);
   $('#togglePassword').onclick = () => {
     const input = $('#loginPassword');
     const show = input.type === 'password';
@@ -1025,29 +1019,111 @@ function initAuth() {
       return;
     }
 
-    localStorage.setItem('cuffi_cloud_auth_ok', 'true');
+    // Fjalëkalimi është vetëm hapi i parë: programi hapet pas kodit nga telefoni (aal2).
     $('#loginError').textContent = '';
-
-    if ($('#rememberLogin').checked) {
-      localStorage.setItem('cc_auth', 'true');
-      sessionStorage.removeItem('cc_auth');
-    } else {
-      sessionStorage.setItem('cc_auth', 'true');
-      localStorage.removeItem('cc_auth');
-    }
-
-    overlay.classList.add('is-hidden');
     $('#loginPassword').value = '';
+    await showMfaStep();
+  });
+
+  // Hapet direkt vetëm kur sesioni ekzistues është tashmë aal2.
+  const remembered = localStorage.getItem('cc_auth') === 'true' || sessionStorage.getItem('cc_auth') === 'true';
+  $('#loginError').textContent = 'Po kontrollohet hyrja...';
+  let state = { session: false, aal2: false };
+  try { state = await window.cuffiMfa.state(); } catch (_) {}
+  $('#loginError').textContent = '';
+  if (state.aal2 && remembered) { finishLogin(); return; }
+  if (state.session && remembered) { await showMfaStep(); return; }
+  setTimeout(() => $('#loginUsername')?.focus(), 80);
+}
+
+function finishLogin() {
+  localStorage.setItem('cuffi_cloud_auth_ok', 'true');
+  if ($('#rememberLogin')?.checked || localStorage.getItem('cc_auth') === 'true') {
+    localStorage.setItem('cc_auth', 'true');
+    sessionStorage.removeItem('cc_auth');
+  } else {
+    sessionStorage.setItem('cc_auth', 'true');
+  }
+  showPasswordStep();
+  $('#loginOverlay').classList.add('is-hidden');
+  window.cuffiMfa.start();
+}
+
+function showPasswordStep() {
+  $('#mfaForm')?.remove();
+  $('#loginOverlay').classList.remove('mfa-mode');
+  $('#loginForm').hidden = false;
+  $('#loginTitle').textContent = 'Hyr në sistem';
+}
+
+async function showMfaStep() {
+  const card = $('#loginOverlay .login-card');
+  $('#loginOverlay').classList.add('mfa-mode');
+  $('#loginForm').hidden = true;
+  $('#mfaForm')?.remove();
+  $('#loginTitle').textContent = 'Verifikimi me telefon';
+
+  const form = document.createElement('form');
+  form.id = 'mfaForm';
+  form.noValidate = true;
+  form.innerHTML = '<div id="mfaBody"></div><div id="mfaError" class="login-error" role="alert">Po ngarkohet...</div>';
+  card.appendChild(form);
+
+  let factor = null;
+  let enroll = null;
+  try {
+    factor = await window.cuffiMfa.factor();
+    if (!factor) enroll = await window.cuffiMfa.enroll();
+  } catch (e) {
+    $('#mfaBody').innerHTML = '<button type="button" class="mfa-back" id="mfaBack"><i class="fa-solid fa-arrow-left"></i> Kthehu</button>';
+    $('#mfaError').textContent = 'Verifikimi me telefon nuk u hap: ' + (e?.message || e);
+    $('#mfaBack').onclick = mfaBack;
+    return;
+  }
+
+  const codeField = '<label>Kodi me 6 shifra<span class="login-field"><i class="fa-solid fa-shield-halved"></i><input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*" required placeholder="000000"></span></label>';
+  const buttons = '<button class="login-submit" type="submit"><i class="fa-solid fa-check"></i> ' + (factor ? 'VERIFIKO' : 'AKTIVIZO') + '</button><button type="button" class="mfa-back" id="mfaBack"><i class="fa-solid fa-arrow-left"></i> Kthehu</button>';
+
+  if (factor) {
+    $('#mfaBody').innerHTML = '<p class="mfa-text">Hap Google ose Microsoft Authenticator dhe shkruaj kodin për Cuffi Creates Studio.</p>' + codeField + buttons;
+  } else {
+    $('#mfaBody').innerHTML =
+      '<ol class="mfa-steps"><li>Instalo në telefon Google Authenticator ose Microsoft Authenticator.</li><li>Në aplikacion shtyp + dhe skano këtë kod QR.</li><li>Shkruaj më poshtë kodin me 6 shifra që del.</li></ol>' +
+      '<div class="mfa-qr"><img id="mfaQr" alt="Kodi QR për aplikacionin e kodeve"></div>' +
+      '<details class="mfa-key"><summary>Nuk skanon dot? Shkruaje kodin me dorë</summary><code id="mfaSecret"></code></details>' +
+      codeField + buttons;
+    $('#mfaQr').src = enroll.qr;
+    $('#mfaSecret').textContent = enroll.secret.replace(/(.{4})/g, '$1 ').trim();
+  }
+  $('#mfaError').textContent = '';
+  $('#mfaBack').onclick = mfaBack;
+  setTimeout(() => $('#mfaCode')?.focus(), 80);
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const code = $('#mfaCode').value.replace(/\D/g, '');
+    if (code.length !== 6) { $('#mfaError').textContent = 'Shkruaj kodin me 6 shifra.'; return; }
+    $('#mfaError').textContent = 'Po verifikohet...';
+    try {
+      await window.cuffiMfa.verify(factor ? factor.id : enroll.id, code);
+      finishLogin();
+    } catch (_) {
+      $('#mfaError').textContent = 'Kodi është gabim ose ka skaduar. Provo përsëri.';
+      $('#mfaCode').select();
+    }
   });
 }
 
-function logout() {
+async function mfaBack() {
+  await logout();
+}
+
+async function logout() {
   localStorage.removeItem('cc_auth');
   sessionStorage.removeItem('cc_auth');
   localStorage.removeItem('cuffi_cloud_auth_ok');
-  try {
-    if (window.__cuffiSupabaseClient) window.__cuffiSupabaseClient.auth.signOut();
-  } catch (_) {}
+  try { await window.cuffiMfa.signOut(); } catch (_) {}
+  showPasswordStep();
   setView('dashboard');
   $('#loginOverlay').classList.remove('is-hidden');
   $('#loginUsername').value = '';
@@ -1205,10 +1281,34 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
     }
   }
 
+  async function ensureClient() {
+    await loadSupabase();
+    if (!client) {
+      client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
+      });
+    }
+    return client;
+  }
+
+  async function isAal2() {
+    try {
+      const { data } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+      return data?.currentLevel === 'aal2';
+    } catch (_) {
+      return false;
+    }
+  }
+
   async function startWithSession(session) {
     if (!session?.user || started) return;
-    user = session.user;
     started = true;
+    // Asnjë lexim/shkrim në cuffi_sync pa kodin nga telefoni (aal2).
+    if (!(await isAal2())) {
+      started = false;
+      return;
+    }
+    user = session.user;
 
     const { data, error } = await client.from("cuffi_sync")
       .select("key")
@@ -1234,38 +1334,66 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, char
 
   window.cuffiSupabaseSignIn = async function(email, password) {
     try {
-      await loadSupabase();
-      if (!client) {
-        client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
-        // client exposed only in-page for logout/debug
-
-          auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
-        });
-      }
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      await ensureClient();
+      const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) return { ok:false, error:error.message };
-      if (data?.session?.user) {
-        localStorage.setItem('cuffi_cloud_auth_ok', 'true');
-        await startWithSession(data.session);
-      }
       return { ok:true };
     } catch (e) {
       return { ok:false, error:e?.message || String(e) };
     }
   };
 
+  // 2FA (TOTP) me Supabase MFA, njësoj si te Cuffi Studio.
+  window.cuffiMfa = {
+    async state() {
+      await ensureClient();
+      const { data: { session } } = await client.auth.getSession();
+      return { session: !!session, aal2: !!session && await isAal2() };
+    },
+    async factor() {
+      await ensureClient();
+      const { data, error } = await client.auth.mfa.listFactors();
+      if (error) throw new Error(error.message);
+      return (data?.totp || []).find(f => f.status === 'verified') || null;
+    },
+    async enroll() {
+      await ensureClient();
+      const { data: all } = await client.auth.mfa.listFactors();
+      for (const f of (all?.all || [])) {
+        if (f.factor_type === 'totp' && f.status !== 'verified') await client.auth.mfa.unenroll({ factorId: f.id });
+      }
+      const { data, error } = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Cuffi Creates Studio ' + new Date().toISOString().slice(0, 16) });
+      if (error) throw new Error(error.message);
+      return { id: data.id, qr: data.totp.qr_code, secret: data.totp.secret };
+    },
+    async verify(factorId, code) {
+      await ensureClient();
+      const { error } = await client.auth.mfa.challengeAndVerify({ factorId, code: String(code).replace(/\D/g, '') });
+      if (error) throw new Error(error.message);
+    },
+    async start() {
+      await ensureClient();
+      const { data: { session } } = await client.auth.getSession();
+      if (session) await startWithSession(session);
+    },
+    async signOut() {
+      user = null;
+      started = false;
+      clearInterval(pullTimer);
+      if (client) await client.auth.signOut();
+    }
+  };
+
   async function initCloud() {
     try {
-      await loadSupabase();
-      client = window.supabase.createClient(CUFFI_SB_URL, CUFFI_SB_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
-      });
+      await ensureClient();
 
       const { data: { session } } = await client.auth.getSession();
       if (session) await startWithSession(session);
 
       client.auth.onAuthStateChange((_event, session) => {
-        if (session) startWithSession(session);
+        // Thirrjet e tjera Supabase jashtë callback-ut, që të mos bllokohet auth-i.
+        if (session) setTimeout(() => startWithSession(session), 0);
         else {
           user = null;
           started = false;

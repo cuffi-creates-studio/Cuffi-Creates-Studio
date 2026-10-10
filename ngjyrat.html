@@ -2287,8 +2287,11 @@ function closeImageViewer() {
         auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}
       });
       const {data:{session}}=await client.auth.getSession();
-      user=session?.user||null;
-      if(!user) return;
+      if(!session?.user) return;
+      // Asnjë sinkronizim pa kodin nga telefoni (aal2).
+      const {data:aal}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+      if(aal?.currentLevel!=="aal2") return;
+      user=session.user;
 
       await pull();
 
